@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import Navbar from "./Components/Navbar.jsX";
 import { ethers } from "ethers";
 import contractABI from './Contract/abi.json'
+import CampaignList from "./Pages/CampaignList";
 
 
 
@@ -66,6 +67,8 @@ function App() {
         <Route path="/" element={<Home contract={getContract()} />} />
         <Route path="/create-campaign" element={<CreateCampaign contract={getContract()} />} />
         <Route path="/campaign/:id" element={<CampaignDetail />} />
+        <Route path="/campaign" element={<CampaignList />} />
+
         <Route path="/dashboard" element={<Dashboard />} />
       </Routes>
     </Router>

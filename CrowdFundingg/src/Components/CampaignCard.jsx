@@ -28,7 +28,7 @@ const CampaignCard = ({ campaign }) => {
 
       {/* Card Content */}
       <div className="p-5">
-        <h2 className="text-xl font-extrabold text-gray-900">{campaign.title}</h2>
+        <h2 className="text-xl font-extrabold text-gray-900">{campaign.title.length > 20 ? `${campaign.title.slice(0, 20)}...` : campaign.title}</h2>
         <p className="text-gray-600 text-sm mt-2">
           {campaign.description.substring(0, 90)}...
         </p>

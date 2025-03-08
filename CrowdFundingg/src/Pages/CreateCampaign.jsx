@@ -76,7 +76,7 @@ const CreateCampaign = ({ contract }) => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="max-w-lg mx-auto p-8 bg-white shadow-lg rounded-xl border border-gray-200 mt-[120px] h-[100vh] overflow-x"
+      className="max-w-lg mx-auto p-8 bg-white shadow-lg rounded-xl border border-gray-200 mt-[120px] mb-[20px] overflow-x"
     >
       <h2 className="text-3xl font-semibold text-gray-800 mb-6 text-center">🚀 Start a Campaign</h2>
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">

@@ -117,10 +117,10 @@ const HomePage = () => {
       {/* Button to View More Campaigns */}
       <div className="flex justify-center mt-8">
         <button
-          onClick={() => navigate("/campaigns")}
-          className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg shadow-lg transition-all cursor-pointer"
+          onClick={() => navigate("/campaign")}
+          className="bg-blue-100 hover:bg-blue-200 text-blue-600 border border-blue-600 font-semibold py-3 px-6 rounded-lg shadow-lg transition-all cursor-pointer"
         >
-          🔍 View All Campaigns
+          View All Campaigns
         </button>
       </div>
     </div>

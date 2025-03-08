@@ -3,6 +3,7 @@ import { ethers } from "ethers";
 import { useParams } from "react-router-dom";
 import contractABI from "../Contract/abi.json";
 import { color } from "framer-motion";
+import { FiTarget, FiClock, FiDollarSign, FiMapPin } from "react-icons/fi";
 
 const contractAddress = "0xCf5f44a1769fb65C59d9Aed2ED27202cf3493BbC";
 
@@ -131,10 +132,10 @@ const CampaignDetail = () => {
           <p className="text-gray-600 mb-4">{campaign.description}</p>
 
           <div className="grid grid-cols-2 gap-4 bg-gray-100 p-4 rounded-lg">
-            <p className="text-gray-700 text-lg">🎯 Target: <span className="font-semibold">{campaign.target} ETH</span></p>
-            <p className="text-gray-700 text-lg">💰 Raised: <span className="font-semibold">{campaign.amountCollected} ETH</span></p>
-            <p className="text-gray-700 text-lg">⏳ Deadline: <span className="font-semibold">{campaign.deadline}</span></p>
-            <p className="text-gray-700 text-lg">📍 Location: <span className="font-semibold">{campaign.state}, {campaign.region}</span></p>
+            <p className="flex gap-1 font-bold items-center jusctify-center text-gray-700 text-lg"><FiTarget className="text-gray-500 text-xl" /> Target: <span className="font-semibold">{campaign.target} ETH</span></p>
+            <p className="flex gap-1 font-bold items-center jusctify-center text-gray-700 text-lg"><FiDollarSign className="text-gray-500 text-xl" /> Raised: <span className="font-semibold">{campaign.amountCollected} ETH</span></p>
+            <p className="flex gap-1 font-bold items-center jusctify-center text-gray-700 text-lg"><FiClock className="text-gray-500 text-xl" /> Deadline: <span className="font-semibold">{campaign.deadline}</span></p>
+            <p className="flex gap-1 font-bold items-center jusctify-center text-gray-700 text-lg"><FiMapPin className="text-gray-500 text-xl" /> Location: <span className="font-semibold">{campaign.state}, {campaign.region}</span></p>
           </div>
 
           {/* Donation Section */}

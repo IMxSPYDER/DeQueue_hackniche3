@@ -14,11 +14,11 @@ const Navbar = ({ account, connectWallet }) => {
           className="flex gap-2 items-center justify-between border border-gray-200 rounded-lg px-3 py-1 bg-white/80 cursor-pointer"
         >
           <span className="font-bold">
-            Crowd <span className="text-blue-500">Fundding</span>
+            De<span className="text-blue-500">Fund</span>
           </span>
         </Link>
         <div className="flex space-x-4 border border-gray-200 rounded-lg px-3 py-1 bg-white/80">
-          <Link to="/yourjobs" className="text-gray-700 p-2 px-3 hover:bg-gray-100 font-medium rounded-md">
+          <Link to="/campaign" className="text-gray-700 p-2 px-3 hover:bg-gray-100 font-medium rounded-md">
             All Campaigns
           </Link>
           {/* <Link to="/find-job" className="text-gray-700 p-2 px-3 hover:bg-gray-100 font-medium rounded-md">
@@ -27,7 +27,7 @@ const Navbar = ({ account, connectWallet }) => {
             My Applications
           </Link>
           <Link to="/pricing" className="text-gray-700 p-2 px-3 hover:bg-gray-100 font-medium rounded-md">
-            Pricing
+            About Us
           </Link>
           <Link to="" className="text-gray-700 p-2 px-3 hover:bg-gray-100 font-medium rounded-md">
             Settings
