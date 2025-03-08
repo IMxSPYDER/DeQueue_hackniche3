@@ -5,13 +5,15 @@ import CampaignDetail from "./Pages/CampaignDetail";
 import Dashboard from "./Pages/Dashboard";
 import { useEffect, useState } from "react";
 import Navbar from "./Components/Navbar.jsX";
+import { ethers } from "ethers";
+import contractABI from './Contract/abi.json'
 
 
 
 function App() {
   const [account, setAccount] = useState(null);
 
-  const contractAddress = '0x0d01AAb8a941F48371A72C1f1858fbe77630660D'; // Replace with your contract address
+  const contractAddress = '0xd03907c2F32c99ad695e4FC3CD469C93871E3371'; // Replace with your contract address
   
 
   // Function to connect wallet and prompt account selection
@@ -47,12 +49,22 @@ function App() {
     checkIfWalletIsConnected();
   }, []);
 
+  const getContract = () => {
+    if (!window.ethereum) {
+      alert("MetaMask not detected");
+      return;
+    }
+    const provider = new ethers.BrowserProvider(window.ethereum);
+    const signer = provider.getSigner();
+    return new ethers.Contract(contractAddress, contractABI, signer);
+  };
+
   return (
     <Router>
       <Navbar account={account} connectWallet={connectWallet} />
       <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/create-campaign" element={<CreateCampaign />} />
+        <Route path="/" element={<Home contract={getContract()} />} />
+        <Route path="/create-campaign" element={<CreateCampaign contract={getContract()} />} />
         <Route path="/campaign/:id" element={<CampaignDetail />} />
         <Route path="/dashboard" element={<Dashboard />} />
       </Routes>

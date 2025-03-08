@@ -1,7 +1,7 @@
 import { ethers } from "ethers";
 import contractABI from './abi.json'
 
-const contractAddress = "0x0d01AAb8a941F48371A72C1f1858fbe77630660D"; // Replace with deployed contract address
+const contractAddress = "0xd03907c2F32c99ad695e4FC3CD469C93871E3371"; // Replace with deployed contract address
 
 
 export const getContract = () => {

@@ -1,62 +1,73 @@
-import React, { useEffect, useState } from "react";
-import { ethers } from "ethers";
-import contractABI from "../Contract/abi.json";
-import { Link } from "react-router-dom"; // Assuming routing is used
+import React, { useEffect, useState } from 'react';
+import { ethers } from 'ethers';
+import contractABI from '../Contract/abi.json'
+// Replace with your contract ABI and address
+const contractAddress = '0xd03907c2F32c99ad695e4FC3CD469C93871E3371';
 
-const Home = () => {
-    const [campaigns, setCampaigns] = useState([]);
+const HomePage = () => {
+  const [campaigns, setCampaigns] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        const fetchCampaigns = async () => {
-            if (typeof window.ethereum === "undefined") {
-                console.error("MetaMask is not installed.");
-                return;
-            }
+  useEffect(() => {
+    const fetchCampaigns = async () => {
+      if (typeof window.ethereum === "undefined") {
+        alert("MetaMask is required to interact with this dApp!");
+        return;
+      }
 
-            const provider = new ethers.BrowserProvider(window.ethereum);
-            const signer = await provider.getSigner();
+      try {
+        // Initialize provider using window.ethereum
+        const provider = new ethers.BrowserProvider(window.ethereum);
 
-            const contractAddress = "0x0d01AAb8a941F48371A72C1f1858fbe77630660D"; // Your contract address
-            const contract = new ethers.Contract(contractAddress, contractABI, signer);
+        // Request account access if not already granted
+        await provider.send("eth_requestAccounts", []);
 
-            try {
-                const allCampaigns = await contract.getAllCampaigns();
-                setCampaigns(allCampaigns);
-            } catch (error) {
-                console.error("Error fetching campaigns:", error);
-            }
-        };
+        // Initialize contract instance
+        const contract = new ethers.Contract(contractAddress, contractABI, provider);
 
-        fetchCampaigns();
-    }, []);
+        // Fetch campaigns (limit to first 4)
+        const allCampaigns = await contract.getCampaigns();
+        const maxCampaigns = allCampaigns.slice(0, 4);
 
-    return (
-        <div className="container mt-[100px] mx-auto px-4 py-8">
-            <h1 className="text-3xl font-bold text-center mb-6">Trending Campaigns</h1>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {campaigns.slice(0, 4).map((campaign, index) => (
-                    <div key={index} className="bg-white shadow-lg rounded-lg p-4">
-                        <img src={campaign.imageUrl} alt={campaign.title} className="w-full h-40 object-cover rounded-md mb-3" />
-                        <h2 className="text-lg font-semibold">{campaign.title}</h2>
-                        <p className="text-gray-600 text-sm line-clamp-2">{campaign.description}</p>
-                        <p className="text-blue-600 font-semibold mt-2">Goal: {ethers.formatEther(campaign.goal)} ETH</p>
-                        <Link to={`/campaign/${index}`} className="mt-3 inline-block text-white bg-blue-500 px-4 py-2 rounded-md text-sm hover:bg-blue-600">
-                            View Details
-                        </Link>
-                    </div>
-                ))}
-            </div>
+        // Set the campaigns to state
+        setCampaigns(maxCampaigns);
+      } catch (error) {
+        console.error("Error fetching campaigns:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-            {/* View More Button */}
-            {campaigns.length > 4 && (
-                <div className="text-center mt-6">
-                    <Link to="/all-campaigns" className="text-blue-500 hover:underline font-semibold">
-                        View More Campaigns →
-                    </Link>
-                </div>
-            )}
+    fetchCampaigns();
+  }, []);
+
+  return (
+    <div>
+      <h1>Latest Campaigns</h1>
+      {loading ? (
+        <p>Loading...</p>
+      ) : (
+        <div className="campaign-list">
+          {campaigns.length > 0 ? (
+            campaigns.map((campaign, index) => (
+              <div key={index} className="campaign-card">
+                <img src={campaign.image} alt={campaign.title} />
+                <h2>{campaign.title}</h2>
+                <p>{campaign.description}</p>
+                <p>Target: {ethers.utils.formatEther(campaign.target)} ETH</p>
+                <p>Amount Collected: {ethers.utils.formatEther(campaign.amountCollected)} ETH</p>
+                <p>Deadline: {new Date(campaign.deadline * 1000).toLocaleDateString()}</p>
+                <p>State: {campaign.state}</p>
+                <p>Region: {campaign.region}</p>
+              </div>
+            ))
+          ) : (
+            <p>No campaigns available</p>
+          )}
         </div>
-    );
+      )}
+    </div>
+  );
 };
 
-export default Home;
+export default HomePage;

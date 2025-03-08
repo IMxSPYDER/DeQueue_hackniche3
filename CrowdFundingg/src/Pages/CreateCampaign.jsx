@@ -1,185 +1,104 @@
-import React, { useState } from 'react';
-import { ethers } from 'ethers';
-import contractABI from '../Contract/abi.json';
+import { useState, useEffect } from "react";
+import { ethers } from "ethers";
+import { motion } from "framer-motion";
+import { FiImage, FiUpload } from "react-icons/fi";
 
-const CreateCampaign = ({ closeModal }) => {
-    const [title, setTitle] = useState('');
-    const [description, setDescription] = useState('');
-    const [goal, setGoal] = useState('');
-    const [duration, setDuration] = useState('');
-    const [imageUrl, setImageUrl] = useState('');
-    const [videoUrl, setVideoUrl] = useState('');
-    const [category, setCategory] = useState('');
+const CreateCampaign = ({ contract }) => {
+  const [form, setForm] = useState({
+    title: "",
+    description: "",
+    target: "",
+    deadline: "",
+    image: "",
+    state: "",
+    region: "",
+  });
 
-    const createCampaign = async () => {
-        try {
-            if (typeof window.ethereum === 'undefined') {
-                alert('Please install MetaMask!');
-                return;
-            }
+  const [imagePreview, setImagePreview] = useState("");
 
-            const provider = new ethers.BrowserProvider(window.ethereum);
-            const signer = await provider.getSigner();
+  useEffect(() => {
+    if (!contract) {
+      console.warn("Smart contract is not loaded!");
+    }
+  }, [contract]);
 
-            const contractAddress = '0x0d01AAb8a941F48371A72C1f1858fbe77630660D'; // Your contract address
-            const contract = new ethers.Contract(contractAddress, contractABI, signer);
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm({ ...form, [name]: value });
 
-            // ✅ Convert goal from Ether to Wei
-            const goalInWei = ethers.parseEther(goal.toString());
+    if (name === "image") setImagePreview(value);
+  };
 
-            // ✅ Convert duration from days to seconds
-            const durationInSeconds = duration * 86400; // Assuming `duration` is in days
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!window.ethereum) {
+      alert("Please install MetaMask!");
+      return;
+    }
 
-            // ✅ Ensure category is an integer (ENUM in Solidity)
-            const categoryIndex = parseInt(category);
+    if (!contract) {
+      alert("Smart contract is not loaded!");
+      return;
+    }
 
-            console.log('Creating campaign with values:', {
-                title,
-                description,
-                goalInWei,
-                durationInSeconds,
-                categoryIndex,
-                imageUrl,
-                videoUrl
-            });
+    try {
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const signer = await provider.getSigner();
+      const contractWithSigner = contract.connect(signer);
+      const owner = await signer.getAddress();
 
-            const tx = await contract.createCampaign(
-                title,
-                description,
-                goalInWei,
-                durationInSeconds,
-                categoryIndex,  // ✅ Make sure this is an integer
-                imageUrl,  // ✅ Ensure this is a string
-                videoUrl,  // ✅ Ensure this is a string
-                {
-                    gasLimit: 8000000, // Adjust based on contract requirements
-                }
-            );
+      const tx = await contractWithSigner.createCampaign(
+        owner,
+        form.title,
+        form.description,
+        ethers.parseEther(form.target || "0"),
+        Math.floor(new Date(form.deadline).getTime() / 1000),
+        form.image,
+        form.state,
+        form.region
+      );
 
-            await tx.wait(); // Wait for the transaction to be confirmed
-            console.log('Campaign created successfully', tx);
-            alert('Campaign created successfully!');
-            closeModal();
-        } catch (error) {
-            alert('Failed to create campaign');
-            console.error('Error creating campaign:', error);
-        }
-    };
+      await tx.wait();
+      alert("🎉 Campaign created successfully!");
+      setForm({ title: "", description: "", target: "", deadline: "", image: "", state: "", region: "" });
+      setImagePreview("");
+    } catch (error) {
+      console.error("Error creating campaign:", error);
+      alert("⚠️ Failed to create campaign.");
+    }
+  };
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        createCampaign();
-        setTitle('');
-        setDescription('');
-        setGoal('');
-        setDuration('');
-        setImageUrl('');
-        setVideoUrl('');
-        setCategory('');
-    };
-
-    return (
-        <div className="fixed p-12 inset-0 flex items-center justify-center z-50 bg-gray-900 bg-opacity-50">
-            <div className="w-full max-w-lg p-8 bg-white rounded-lg shadow-lg relative h-[90vh] overflow-y-scroll hide-scrollbar">
-                <button onClick={closeModal} className="absolute top-2 right-2 text-gray-600 hover:text-gray-800">✕</button>
-                <h2 className="text-2xl font-bold mb-4 text-center text-gray-800">Create a New Campaign</h2>
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    <div className="flex flex-col">
-                        <label className="text-sm font-semibold text-gray-600">Title:</label>
-                        <input
-                            type="text"
-                            value={title}
-                            onChange={(e) => setTitle(e.target.value)}
-                            className="p-2 border rounded-md focus:outline-none focus:border-indigo-500"
-                            required
-                        />
-                    </div>
-                    <div className="flex flex-col">
-                        <label className="text-sm font-semibold text-gray-600">Description:</label>
-                        <textarea
-                            value={description}
-                            onChange={(e) => setDescription(e.target.value)}
-                            className="p-2 border rounded-md focus:outline-none focus:border-indigo-500"
-                            required
-                        />
-                    </div>
-                    <div className="flex space-x-4">
-                        <div className="flex flex-col w-1/2">
-                            <label className="text-sm font-semibold text-gray-600">Funding Goal (in Ether):</label>
-                            <input
-                                type="number"
-                                value={goal}
-                                onChange={(e) => setGoal(e.target.value)}
-                                className="p-2 border rounded-md focus:outline-none focus:border-indigo-500"
-                                required
-                            />
-                        </div>
-                        <div className="flex flex-col w-1/2">
-                            <label className="text-sm font-semibold text-gray-600">Duration (in Days):</label>
-                            <input
-                                type="number"
-                                value={duration}
-                                onChange={(e) => setDuration(e.target.value)}
-                                className="p-2 border rounded-md focus:outline-none focus:border-indigo-500"
-                                required
-                            />
-                        </div>
-                    </div>
-                    <div className="flex flex-col">
-                        <label className="text-sm font-semibold text-gray-600">Image URL:</label>
-                        <input
-                            type="url"
-                            value={imageUrl}
-                            onChange={(e) => setImageUrl(e.target.value)}
-                            className="p-2 border rounded-md focus:outline-none focus:border-indigo-500"
-                            required
-                        />
-                    </div>
-                    <div className="flex flex-col">
-                        <label className="text-sm font-semibold text-gray-600">Video URL:</label>
-                        <input
-                            type="url"
-                            value={videoUrl}
-                            onChange={(e) => setVideoUrl(e.target.value)}
-                            className="p-2 border rounded-md focus:outline-none focus:border-indigo-500"
-                            required
-                        />
-                    </div>
-                    <div className="flex flex-col">
-                        <label className="text-sm font-semibold text-gray-600">Category:</label>
-                        <select
-                            value={category}
-                            onChange={(e) => setCategory(e.target.value)}
-                            className="p-2 border rounded-md focus:outline-none focus:border-indigo-500"
-                            required
-                        >
-                            <option value="">Select a Category</option>
-                            <option value="0">Health</option>
-                            <option value="1">Disaster</option>
-                            <option value="2">Crisis</option>
-                            <option value="3">Education</option>
-                            <option value="4">Environment</option>
-                        </select>
-                    </div>
-                    <div className="flex justify-end space-x-4">
-                        <button
-                            type="button"
-                            onClick={closeModal}
-                            className="px-4 py-2 text-sm font-semibold text-gray-600 bg-gray-200 rounded-md hover:bg-gray-300"
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            type="submit"
-                            className="px-4 py-2 text-sm font-semibold text-white bg-blue-500 rounded-md hover:bg-blue-600"
-                        >
-                            Submit
-                        </button>
-                    </div>
-                </form>
-            </div>
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="max-w-lg mx-auto p-8 bg-white shadow-lg rounded-xl border border-gray-200"
+    >
+      <h2 className="text-3xl font-semibold text-gray-800 mb-6 text-center">🚀 Start a Campaign</h2>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <input type="text" name="title" placeholder="Campaign Title" value={form.title} onChange={handleChange} className="border p-3 rounded-md focus:outline-blue-500" required />
+        <textarea name="description" placeholder="Description" value={form.description} onChange={handleChange} rows="3" className="border p-3 rounded-md focus:outline-blue-500" required />
+        <div className="relative">
+          <input type="text" name="target" placeholder="Target (ETH)" value={form.target} onChange={handleChange} className="border p-3 rounded-md w-full pr-10 focus:outline-blue-500" required />
+          <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">ETH</span>
         </div>
-    );
+        <input type="date" name="deadline" value={form.deadline} onChange={handleChange} className="border p-3 rounded-md focus:outline-blue-500" required />
+        <div className="grid grid-cols-2 gap-4">
+          <input type="text" name="state" placeholder="State" value={form.state} onChange={handleChange} className="border p-3 rounded-md focus:outline-blue-500" required />
+          <input type="text" name="region" placeholder="Region" value={form.region} onChange={handleChange} className="border p-3 rounded-md focus:outline-blue-500" required />
+        </div>
+        <div className="relative flex items-center gap-3 border p-3 rounded-md">
+          <FiImage className="text-gray-500 text-xl" />
+          <input type="text" name="image" placeholder="Image URL" value={form.image} onChange={handleChange} className="w-full focus:outline-none" required />
+        </div>
+        {imagePreview && <img src={imagePreview} alt="Preview" className="w-full h-40 object-cover rounded-md shadow-md" />}
+        <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} type="submit" className="bg-gradient-to-r from-blue-500 to-blue-700 text-white p-3 rounded-md font-semibold flex items-center justify-center gap-2">
+          <FiUpload className="text-lg" /> Create Campaign
+        </motion.button>
+      </form>
+    </motion.div>
+  );
 };
 
 export default CreateCampaign;
