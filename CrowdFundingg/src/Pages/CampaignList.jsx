@@ -3,7 +3,7 @@ import { ethers } from "ethers";
 import { Link } from "react-router-dom";
 import contractABI from "../Contract/abi.json";
 
-const contractAddress = "0xCf5f44a1769fb65C59d9Aed2ED27202cf3493BbC";
+const contractAddress = "0x84c35E54f54BBb44c3Fb40d6E4d477B3E580F8a7";
 
 const CampaignList = () => {
   const [campaigns, setCampaigns] = useState([]);

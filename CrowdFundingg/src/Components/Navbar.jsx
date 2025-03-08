@@ -40,11 +40,11 @@ const Navbar = ({ account, connectWallet }) => {
         {/* Right Side Buttons */}
         <div className="flex items-center space-x-3 gap-2">
           {account ? (
-            <Link to="/dashboard" className="px-4 py-2.5 text-white font-semibold bg-blue-500 rounded-md">
+            <Link to="/dashboard" className="px-4 cursor-pointer py-2.5 text-white font-semibold bg-blue-500 rounded-md">
               Dashboard
             </Link>
           ) : (
-            <button onClick={connectWallet} className="px-4 py-2.5 text-white font-semibold bg-blue-500 rounded-md">
+            <button onClick={connectWallet} className="px-4 cursor-pointer py-2.5 text-white font-semibold bg-blue-500 rounded-md">
               Connect to Wallet
             </button>
           )}

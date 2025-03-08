@@ -8,13 +8,14 @@ import Navbar from "./Components/Navbar.jsX";
 import { ethers } from "ethers";
 import contractABI from './Contract/abi.json'
 import CampaignList from "./Pages/CampaignList";
+import ErrorBoundary from "./Components/ErrorBoundary";
 
 
 
 function App() {
   const [account, setAccount] = useState(null);
 
-  const contractAddress = '0xCf5f44a1769fb65C59d9Aed2ED27202cf3493BbC'; // Replace with your contract address
+  const contractAddress = '0x84c35E54f54BBb44c3Fb40d6E4d477B3E580F8a7'; // Replace with your contract address
   
 
   // Function to connect wallet and prompt account selection
@@ -68,8 +69,9 @@ function App() {
         <Route path="/create-campaign" element={<CreateCampaign contract={getContract()} />} />
         <Route path="/campaign/:id" element={<CampaignDetail />} />
         <Route path="/campaign" element={<CampaignList />} />
-
+        
         <Route path="/dashboard" element={<Dashboard />} />
+        
       </Routes>
     </Router>
   );

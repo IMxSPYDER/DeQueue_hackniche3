@@ -2,10 +2,9 @@ import React, { useEffect, useState } from "react";
 import { ethers } from "ethers";
 import { useParams } from "react-router-dom";
 import contractABI from "../Contract/abi.json";
-import { color } from "framer-motion";
 import { FiTarget, FiClock, FiDollarSign, FiMapPin } from "react-icons/fi";
 
-const contractAddress = "0xCf5f44a1769fb65C59d9Aed2ED27202cf3493BbC";
+const contractAddress = "0x84c35E54f54BBb44c3Fb40d6E4d477B3E580F8a7";
 
 const CampaignDetail = () => {
   const { id } = useParams();
@@ -21,34 +20,36 @@ const CampaignDetail = () => {
         alert("MetaMask is required!");
         return;
       }
-    
+
       try {
         setLoading(true);
         const provider = new ethers.BrowserProvider(window.ethereum);
         await provider.send("eth_requestAccounts", []);
         const contract = new ethers.Contract(contractAddress, contractABI, provider);
-    
+
         // ✅ Fetch campaign safely
         const campaignData = await contract.campaigns(id);
         if (!campaignData) throw new Error("Invalid campaign data");
-    
+
+        // ✅ Handle Image (Detect & Convert IPFS Hash)
+        let imageUrl = campaignData.image || "";
+        if (imageUrl.startsWith("Qm") || imageUrl.startsWith("bafy")) {
+          imageUrl = `https://ipfs.io/ipfs/${imageUrl}`;
+        }
+
         // ✅ Fetch donors safely
         let donorAddresses = [];
         let donationAmounts = [];
         try {
           const donorsResult = await contract.getDonors(id);
-          
-          // Ensure donorsResult is structured as expected
           if (donorsResult.length === 2) {
             donorAddresses = donorsResult[0];
             donationAmounts = donorsResult[1];
           }
-    
-          console.log("Processed Donors:", donorAddresses, donationAmounts);
         } catch (err) {
           console.warn("Error fetching donors:", err);
         }
-    
+
         setCampaign({
           title: campaignData.title || "Untitled",
           target: ethers.formatEther(campaignData.target.toString()),
@@ -58,17 +59,17 @@ const CampaignDetail = () => {
             campaignData.deadline > 0
               ? new Date(Number(campaignData.deadline) * 1000).toLocaleDateString()
               : "N/A",
-          image: campaignData.image || "https://via.placeholder.com/300",
+          image: imageUrl || "https://via.placeholder.com/300",
           state: campaignData.state || "Unknown",
           region: campaignData.region || "Unknown",
         });
-    
+
         // ✅ Fix Donor List Formatting
         const formattedDonors = donorAddresses.map((address, index) => ({
           address: address,
           amount: donationAmounts[index] ? ethers.formatEther(donationAmounts[index]) : "0",
         }));
-    
+
         setDonors(formattedDonors);
       } catch (error) {
         console.error("Error fetching details:", error);
@@ -77,10 +78,6 @@ const CampaignDetail = () => {
         setLoading(false);
       }
     };
-    
-    
-    
-    
 
     fetchCampaignDetails();
   }, [id]);
@@ -120,11 +117,12 @@ const CampaignDetail = () => {
         <p className="text-center text-gray-600">Loading...</p>
       ) : campaign ? (
         <div>
-          {/* Campaign Image */}
+          {/* Campaign Image with Error Handling */}
           <img
             src={campaign.image}
             alt={campaign.title}
             className="w-full h-64 object-cover rounded-md mb-6"
+            onError={(e) => { e.target.src = "https://via.placeholder.com/300"; }} // Fallback Image
           />
 
           {/* Campaign Details */}
@@ -132,10 +130,10 @@ const CampaignDetail = () => {
           <p className="text-gray-600 mb-4">{campaign.description}</p>
 
           <div className="grid grid-cols-2 gap-4 bg-gray-100 p-4 rounded-lg">
-            <p className="flex gap-1 font-bold items-center jusctify-center text-gray-700 text-lg"><FiTarget className="text-gray-500 text-xl" /> Target: <span className="font-semibold">{campaign.target} ETH</span></p>
-            <p className="flex gap-1 font-bold items-center jusctify-center text-gray-700 text-lg"><FiDollarSign className="text-gray-500 text-xl" /> Raised: <span className="font-semibold">{campaign.amountCollected} ETH</span></p>
-            <p className="flex gap-1 font-bold items-center jusctify-center text-gray-700 text-lg"><FiClock className="text-gray-500 text-xl" /> Deadline: <span className="font-semibold">{campaign.deadline}</span></p>
-            <p className="flex gap-1 font-bold items-center jusctify-center text-gray-700 text-lg"><FiMapPin className="text-gray-500 text-xl" /> Location: <span className="font-semibold">{campaign.state}, {campaign.region}</span></p>
+            <p className="flex gap-1 font-bold items-center text-gray-700 text-lg"><FiTarget className="text-gray-500 text-xl" /> Target: <span className="font-semibold">{campaign.target} ETH</span></p>
+            <p className="flex gap-1 font-bold items-center text-gray-700 text-lg"><FiDollarSign className="text-gray-500 text-xl" /> Raised: <span className="font-semibold">{campaign.amountCollected} ETH</span></p>
+            <p className="flex gap-1 font-bold items-center text-gray-700 text-lg"><FiClock className="text-gray-500 text-xl" /> Deadline: <span className="font-semibold">{campaign.deadline}</span></p>
+            <p className="flex gap-1 font-bold items-center text-gray-700 text-lg"><FiMapPin className="text-gray-500 text-xl" /> Location: <span className="font-semibold">{campaign.state}, {campaign.region}</span></p>
           </div>
 
           {/* Donation Section */}
@@ -161,30 +159,20 @@ const CampaignDetail = () => {
 
           {/* Donor List */}
           <div className="mt-8">
-  <h3 className="text-xl font-semibold text-gray-800 mb-4">👥 Donor List</h3>
-  {donors.length > 0 ? (
-    <ul className="border rounded-lg bg-gray-50 p-1">
-    {donors.map((donor, index) => {
-  // Generate a random light background color
-  const randomBgColor = `hsl(${Math.floor(Math.random() * 360)}, 80%, 90%)`; // Light pastel colors
-  const textColor = "#333"; // Dark text color
-
-  return (
-    <li key={index} className="p-2 border-b last:border-none flex align-center justify-between text-gray-700">
-      <span>{donor.address}</span>
-      <span className="font-bold" style={{ color: textColor, backgroundColor: randomBgColor, padding: "5px 10px", borderRadius: "25px" }}>
-        {donor.amount} ETH
-      </span>
-    </li>
-  );
-})}
-
-    </ul>
-  ) : (
-    <p className="text-gray-600">No donations yet. Be the first to contribute! 🎉</p>
-  )}
-</div>
-
+            <h3 className="text-xl font-semibold text-gray-800 mb-4">👥 Donor List</h3>
+            {donors.length > 0 ? (
+              <ul className="border rounded-lg bg-gray-50 p-1">
+                {donors.map((donor, index) => (
+                  <li key={index} className="p-2 border-b last:border-none flex justify-between text-gray-700">
+                    <span>{donor.address}</span>
+                    <span className="font-bold bg-gray-200 px-3 py-1 rounded-md">{donor.amount} ETH</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-gray-600">No donations yet. Be the first to contribute! 🎉</p>
+            )}
+          </div>
         </div>
       ) : (
         <p className="text-center text-gray-500">Campaign not found.</p>

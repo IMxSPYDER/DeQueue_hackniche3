@@ -181,6 +181,59 @@ contract CrowdfundingPlatform is ReentrancyGuard {
         return contributions[_campaignId][_contributor];
     }
 
+    // Added missing functions
+
+    function getDonors(uint256 _campaignId) public view returns (address[] memory, uint256[] memory) {
+        require(_campaignId < numberOfCampaigns, "Invalid campaign ID");
+        Campaign storage campaign = campaigns[_campaignId];
+
+        uint256 donorCount = campaign.contributors.length;
+        uint256[] memory donationAmounts = new uint256[](donorCount);
+
+        for (uint256 i = 0; i < donorCount; i++) {
+            donationAmounts[i] = contributions[_campaignId][campaign.contributors[i]];
+        }
+
+        return (campaign.contributors, donationAmounts);
+    }
+
+    function getCampaignsByOwner(address _owner) public view returns (CampaignInfo[] memory) {
+        uint256 count = 0;
+
+        // Count campaigns created by the user
+        for (uint256 i = 0; i < numberOfCampaigns; i++) {
+            if (campaigns[i].creator == _owner) {
+                count++;
+            }
+        }
+
+        // Create an array to store user campaigns
+        CampaignInfo[] memory userCampaigns = new CampaignInfo[](count);
+        uint256 index = 0;
+
+        for (uint256 i = 0; i < numberOfCampaigns; i++) {
+            if (campaigns[i].creator == _owner) {
+                Campaign storage campaign = campaigns[i];
+                userCampaigns[index] = CampaignInfo(
+                    campaign.creator,
+                    campaign.title,
+                    campaign.description,
+                    campaign.target,
+                    campaign.deadline,
+                    campaign.amountCollected,
+                    campaign.state,
+                    campaign.region,
+                    campaign.image,
+                    campaign.isCompleted,
+                    campaign.contributors
+                );
+                index++;
+            }
+        }
+
+        return userCampaigns;
+    }
+
     // ZKP Root Management for Proof Validation
     function setMerkleRoot(bytes32 _merkleRoot) external {
         merkleRoot = _merkleRoot;

@@ -4,6 +4,14 @@ import { useNavigate } from "react-router-dom";
 const CampaignCard = ({ campaign }) => {
   const navigate = useNavigate();
 
+  let imageUrl = campaign.image || "";
+
+  // Check if image is an IPFS hash and convert to URL
+  if (imageUrl.startsWith("Qm") || imageUrl.startsWith("bafy")) {
+    imageUrl = `https://ipfs.io/ipfs/${imageUrl}`;
+  }
+
+
   return (
     <motion.div
       key={campaign.id}
@@ -14,7 +22,7 @@ const CampaignCard = ({ campaign }) => {
       {/* Image with Gradient Overlay */}
       <div className="relative">
         <img
-          src={campaign.image}
+          src={imageUrl}
           alt={campaign.title}
           className="w-full h-60 object-cover rounded-t-2xl"
         />
