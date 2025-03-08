@@ -1,7 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-contract CrowdfundingPlatform {
+import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.9.3/contracts/security/ReentrancyGuard.sol";
+import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.9.3/contracts/utils/cryptography/MerkleProof.sol";
+
+contract CrowdfundingPlatform is ReentrancyGuard {
     struct Campaign {
         address creator;
         string title;
@@ -37,6 +40,9 @@ contract CrowdfundingPlatform {
     event CampaignCreated(uint256 campaignId, address creator, uint256 target, uint256 deadline);
     event ContributionReceived(uint256 campaignId, address contributor, uint256 amount);
     event FundsWithdrawn(uint256 campaignId, uint256 amount);
+
+    // ZKP Merkle Root for Proof Verification
+    bytes32 public merkleRoot;
 
     function createCampaign(
         string memory _title,
@@ -84,13 +90,17 @@ contract CrowdfundingPlatform {
         emit ContributionReceived(_campaignId, msg.sender, msg.value);
     }
 
-    function withdrawFunds(uint256 _campaignId) public {
+    function withdrawFunds(uint256 _campaignId, bytes32[] calldata _proof) public nonReentrant {
         require(_campaignId < numberOfCampaigns, "Invalid campaign ID");
         Campaign storage campaign = campaigns[_campaignId];
         require(campaign.creator == msg.sender, "Only campaign creator can withdraw funds");
         require(block.timestamp >= campaign.deadline, "Cannot withdraw before deadline");
         require(campaign.amountCollected >= campaign.target, "Target not reached");
         require(!campaign.isCompleted, "Funds already withdrawn");
+
+        // ZKP Verification
+        bytes32 leaf = keccak256(abi.encodePacked(msg.sender));
+        require(MerkleProof.verify(_proof, merkleRoot, leaf), "Invalid ZKP proof");
 
         uint256 amount = campaign.amountCollected;
         campaign.isCompleted = true;
@@ -126,60 +136,57 @@ contract CrowdfundingPlatform {
     function getContribution(uint256 _campaignId, address _contributor) public view returns (uint256) {
         require(_campaignId < numberOfCampaigns, "Invalid campaign ID");
         return contributions[_campaignId][_contributor];
-    } 
+    }
 
     function getDonors(uint256 _campaignId) public view returns (address[] memory, uint256[] memory) {
-    require(_campaignId < numberOfCampaigns, "Invalid campaign ID");
-    Campaign storage campaign = campaigns[_campaignId];
-
-    uint256 donorCount = campaign.contributors.length;
-    uint256[] memory donationAmounts = new uint256[](donorCount);
-
-    for (uint256 i = 0; i < donorCount; i++) {
-        donationAmounts[i] = contributions[_campaignId][campaign.contributors[i]];
-    }
-
-    return (campaign.contributors, donationAmounts);
-}
-
-function getCampaignsByOwner(address _owner) public view returns (CampaignInfo[] memory) {
-    uint256 count = 0;
-
-    // Count campaigns created by the user
-    for (uint256 i = 0; i < numberOfCampaigns; i++) {
-        if (campaigns[i].creator == _owner) {
-            count++;
+        require(_campaignId < numberOfCampaigns, "Invalid campaign ID");
+        Campaign storage campaign = campaigns[_campaignId];
+        
+        uint256 donorCount = campaign.contributors.length;
+        uint256[] memory donationAmounts = new uint256[](donorCount);
+        
+        for (uint256 i = 0; i < donorCount; i++) {
+            donationAmounts[i] = contributions[_campaignId][campaign.contributors[i]];
         }
+        
+        return (campaign.contributors, donationAmounts);
     }
 
-    // Create an array to store user campaigns
-    CampaignInfo[] memory userCampaigns = new CampaignInfo[](count);
-    uint256 index = 0;
-
-    for (uint256 i = 0; i < numberOfCampaigns; i++) {
-        if (campaigns[i].creator == _owner) {
-            Campaign storage campaign = campaigns[i];
-            userCampaigns[index] = CampaignInfo(
-                campaign.creator,
-                campaign.title,
-                campaign.description,
-                campaign.target,
-                campaign.deadline,
-                campaign.amountCollected,
-                campaign.state,
-                campaign.region,
-                campaign.image,
-                campaign.isCompleted,
-                campaign.contributors
-            );
-            index++;
+    function getCampaignsByOwner(address _owner) public view returns (CampaignInfo[] memory) {
+        uint256 count = 0;
+        for (uint256 i = 0; i < numberOfCampaigns; i++) {
+            if (campaigns[i].creator == _owner) {
+                count++;
+            }
         }
+        
+        CampaignInfo[] memory userCampaigns = new CampaignInfo[](count);
+        uint256 index = 0;
+        for (uint256 i = 0; i < numberOfCampaigns; i++) {
+            if (campaigns[i].creator == _owner) {
+                Campaign storage campaign = campaigns[i];
+                userCampaigns[index] = CampaignInfo(
+                    campaign.creator,
+                    campaign.title,
+                    campaign.description,
+                    campaign.target,
+                    campaign.deadline,
+                    campaign.amountCollected,
+                    campaign.state,
+                    campaign.region,
+                    campaign.image,
+                    campaign.isCompleted,
+                    campaign.contributors
+                );
+                index++;
+            }
+        }
+        return userCampaigns;
     }
 
-    return userCampaigns;
-}
-
-
+    function setMerkleRoot(bytes32 _merkleRoot) external {
+        merkleRoot = _merkleRoot;
+    }
 
     receive() external payable {}
 }
