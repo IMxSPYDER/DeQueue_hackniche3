@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { ethers } from "ethers";
 import crowdfundingABI from "../Contract/abi.json";
 
-const contractAddress = "0xd03907c2F32c99ad695e4FC3CD469C93871E3371";
+const contractAddress = "0x4560869AF45f2F4764F79eF1Fff55e0b3c6E467d";
 
 const Dashboard = ({ account, setAccount }) => {
   const [createdCampaigns, setCreatedCampaigns] = useState([]);

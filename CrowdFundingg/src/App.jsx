@@ -13,7 +13,7 @@ import contractABI from './Contract/abi.json'
 function App() {
   const [account, setAccount] = useState(null);
 
-  const contractAddress = '0xd03907c2F32c99ad695e4FC3CD469C93871E3371'; // Replace with your contract address
+  const contractAddress = '0x4560869AF45f2F4764F79eF1Fff55e0b3c6E467d'; // Replace with your contract address
   
 
   // Function to connect wallet and prompt account selection

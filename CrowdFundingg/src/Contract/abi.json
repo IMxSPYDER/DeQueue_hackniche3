@@ -1,5 +1,80 @@
 [
 	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "campaignId",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "address",
+				"name": "creator",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "target",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "deadline",
+				"type": "uint256"
+			}
+		],
+		"name": "CampaignCreated",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "campaignId",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "address",
+				"name": "contributor",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "amount",
+				"type": "uint256"
+			}
+		],
+		"name": "ContributionReceived",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "campaignId",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "amount",
+				"type": "uint256"
+			}
+		],
+		"name": "FundsWithdrawn",
+		"type": "event"
+	},
+	{
 		"inputs": [
 			{
 				"internalType": "uint256",
@@ -11,7 +86,7 @@
 		"outputs": [
 			{
 				"internalType": "address",
-				"name": "owner",
+				"name": "creator",
 				"type": "address"
 			},
 			{
@@ -56,7 +131,7 @@
 			},
 			{
 				"internalType": "bool",
-				"name": "fundsReleased",
+				"name": "isCompleted",
 				"type": "bool"
 			}
 		],
@@ -66,10 +141,42 @@
 	{
 		"inputs": [
 			{
-				"internalType": "address",
-				"name": "_owner",
-				"type": "address"
+				"internalType": "uint256",
+				"name": "_campaignId",
+				"type": "uint256"
+			}
+		],
+		"name": "contribute",
+		"outputs": [],
+		"stateMutability": "payable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
 			},
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"name": "contributions",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
 			{
 				"internalType": "string",
 				"name": "_title",
@@ -92,17 +199,17 @@
 			},
 			{
 				"internalType": "string",
-				"name": "_image",
-				"type": "string"
-			},
-			{
-				"internalType": "string",
 				"name": "_state",
 				"type": "string"
 			},
 			{
 				"internalType": "string",
 				"name": "_region",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "_image",
 				"type": "string"
 			}
 		],
@@ -118,27 +225,14 @@
 		"type": "function"
 	},
 	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "_id",
-				"type": "uint256"
-			}
-		],
-		"name": "donateToCampaign",
-		"outputs": [],
-		"stateMutability": "payable",
-		"type": "function"
-	},
-	{
 		"inputs": [],
-		"name": "getCampaigns",
+		"name": "getAllCampaigns",
 		"outputs": [
 			{
 				"components": [
 					{
 						"internalType": "address",
-						"name": "owner",
+						"name": "creator",
 						"type": "address"
 					},
 					{
@@ -182,184 +276,17 @@
 						"type": "string"
 					},
 					{
-						"internalType": "address[]",
-						"name": "donators",
-						"type": "address[]"
-					},
-					{
-						"internalType": "uint256[]",
-						"name": "donations",
-						"type": "uint256[]"
-					},
-					{
 						"internalType": "bool",
-						"name": "fundsReleased",
+						"name": "isCompleted",
 						"type": "bool"
-					}
-				],
-				"internalType": "struct CrowdFunding.Campaign[]",
-				"name": "",
-				"type": "tuple[]"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "_donator",
-				"type": "address"
-			}
-		],
-		"name": "getCampaignsByDonator",
-		"outputs": [
-			{
-				"components": [
-					{
-						"internalType": "address",
-						"name": "owner",
-						"type": "address"
-					},
-					{
-						"internalType": "string",
-						"name": "title",
-						"type": "string"
-					},
-					{
-						"internalType": "string",
-						"name": "description",
-						"type": "string"
-					},
-					{
-						"internalType": "uint256",
-						"name": "target",
-						"type": "uint256"
-					},
-					{
-						"internalType": "uint256",
-						"name": "deadline",
-						"type": "uint256"
-					},
-					{
-						"internalType": "uint256",
-						"name": "amountCollected",
-						"type": "uint256"
-					},
-					{
-						"internalType": "string",
-						"name": "state",
-						"type": "string"
-					},
-					{
-						"internalType": "string",
-						"name": "region",
-						"type": "string"
-					},
-					{
-						"internalType": "string",
-						"name": "image",
-						"type": "string"
 					},
 					{
 						"internalType": "address[]",
-						"name": "donators",
+						"name": "contributors",
 						"type": "address[]"
-					},
-					{
-						"internalType": "uint256[]",
-						"name": "donations",
-						"type": "uint256[]"
-					},
-					{
-						"internalType": "bool",
-						"name": "fundsReleased",
-						"type": "bool"
 					}
 				],
-				"internalType": "struct CrowdFunding.Campaign[]",
-				"name": "",
-				"type": "tuple[]"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "_owner",
-				"type": "address"
-			}
-		],
-		"name": "getCampaignsByOwner",
-		"outputs": [
-			{
-				"components": [
-					{
-						"internalType": "address",
-						"name": "owner",
-						"type": "address"
-					},
-					{
-						"internalType": "string",
-						"name": "title",
-						"type": "string"
-					},
-					{
-						"internalType": "string",
-						"name": "description",
-						"type": "string"
-					},
-					{
-						"internalType": "uint256",
-						"name": "target",
-						"type": "uint256"
-					},
-					{
-						"internalType": "uint256",
-						"name": "deadline",
-						"type": "uint256"
-					},
-					{
-						"internalType": "uint256",
-						"name": "amountCollected",
-						"type": "uint256"
-					},
-					{
-						"internalType": "string",
-						"name": "state",
-						"type": "string"
-					},
-					{
-						"internalType": "string",
-						"name": "region",
-						"type": "string"
-					},
-					{
-						"internalType": "string",
-						"name": "image",
-						"type": "string"
-					},
-					{
-						"internalType": "address[]",
-						"name": "donators",
-						"type": "address[]"
-					},
-					{
-						"internalType": "uint256[]",
-						"name": "donations",
-						"type": "uint256[]"
-					},
-					{
-						"internalType": "bool",
-						"name": "fundsReleased",
-						"type": "bool"
-					}
-				],
-				"internalType": "struct CrowdFunding.Campaign[]",
+				"internalType": "struct CrowdfundingPlatform.CampaignInfo[]",
 				"name": "",
 				"type": "tuple[]"
 			}
@@ -371,21 +298,21 @@
 		"inputs": [
 			{
 				"internalType": "uint256",
-				"name": "_id",
+				"name": "_campaignId",
 				"type": "uint256"
-			}
-		],
-		"name": "getDonators",
-		"outputs": [
-			{
-				"internalType": "address[]",
-				"name": "",
-				"type": "address[]"
 			},
 			{
-				"internalType": "uint256[]",
+				"internalType": "address",
+				"name": "_contributor",
+				"type": "address"
+			}
+		],
+		"name": "getContribution",
+		"outputs": [
+			{
+				"internalType": "uint256",
 				"name": "",
-				"type": "uint256[]"
+				"type": "uint256"
 			}
 		],
 		"stateMutability": "view",
@@ -408,37 +335,17 @@
 		"inputs": [
 			{
 				"internalType": "uint256",
-				"name": "_id",
+				"name": "_campaignId",
 				"type": "uint256"
 			}
 		],
-		"name": "releaseFunds",
+		"name": "withdrawFunds",
 		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"
 	},
 	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "",
-				"type": "address"
-			},
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"name": "userDonations",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
+		"stateMutability": "payable",
+		"type": "receive"
 	}
 ]

@@ -31,42 +31,45 @@ const CreateCampaign = ({ contract }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+  
     if (!window.ethereum) {
       alert("Please install MetaMask!");
       return;
     }
-
+  
     if (!contract) {
       alert("Smart contract is not loaded!");
       return;
     }
-
+  
     try {
       const provider = new ethers.BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
       const contractWithSigner = contract.connect(signer);
-      const owner = await signer.getAddress();
-
+  
       const tx = await contractWithSigner.createCampaign(
-        owner,
         form.title,
         form.description,
-        ethers.parseEther(form.target || "0"),
+        ethers.parseUnits(form.target, "ether"), // Fix: Proper conversion to wei
         Math.floor(new Date(form.deadline).getTime() / 1000),
-        form.image,
         form.state,
-        form.region
+        form.region,
+        form.image
       );
-
+  
       await tx.wait();
       alert("🎉 Campaign created successfully!");
+  
+      // Reset form after successful transaction
       setForm({ title: "", description: "", target: "", deadline: "", image: "", state: "", region: "" });
       setImagePreview("");
+  
     } catch (error) {
       console.error("Error creating campaign:", error);
       alert("⚠️ Failed to create campaign.");
     }
   };
+  
 
   return (
     <motion.div
