@@ -76,7 +76,7 @@ const CreateCampaign = ({ contract }) => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="max-w-lg mx-auto p-8 bg-white shadow-lg rounded-xl border border-gray-200"
+      className="max-w-lg mx-auto p-8 bg-white shadow-lg rounded-xl border border-gray-200 mt-[120px] h-[100vh] overflow-x"
     >
       <h2 className="text-3xl font-semibold text-gray-800 mb-6 text-center">🚀 Start a Campaign</h2>
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
@@ -96,7 +96,7 @@ const CreateCampaign = ({ contract }) => {
           <input type="text" name="image" placeholder="Image URL" value={form.image} onChange={handleChange} className="w-full focus:outline-none" required />
         </div>
         {imagePreview && <img src={imagePreview} alt="Preview" className="w-full h-40 object-cover rounded-md shadow-md" />}
-        <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} type="submit" className="bg-gradient-to-r from-blue-500 to-blue-700 text-white p-3 rounded-md font-semibold flex items-center justify-center gap-2">
+        <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} type="submit" className="cursor-pointer bg-gradient-to-r from-blue-500 to-blue-700 text-white p-3 rounded-md font-semibold flex items-center justify-center gap-2">
           <FiUpload className="text-lg" /> Create Campaign
         </motion.button>
       </form>

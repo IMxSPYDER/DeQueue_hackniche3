@@ -2,8 +2,9 @@ import React, { useEffect, useState } from "react";
 import { ethers } from "ethers";
 import { useParams } from "react-router-dom";
 import contractABI from "../Contract/abi.json";
+import { color } from "framer-motion";
 
-const contractAddress = "0x4560869AF45f2F4764F79eF1Fff55e0b3c6E467d";
+const contractAddress = "0xCf5f44a1769fb65C59d9Aed2ED27202cf3493BbC";
 
 const CampaignDetail = () => {
   const { id } = useParams();
@@ -16,38 +17,69 @@ const CampaignDetail = () => {
   useEffect(() => {
     const fetchCampaignDetails = async () => {
       if (!window.ethereum) {
-        alert("MetaMask is required to interact with this dApp!");
+        alert("MetaMask is required!");
         return;
       }
-
+    
       try {
+        setLoading(true);
         const provider = new ethers.BrowserProvider(window.ethereum);
         await provider.send("eth_requestAccounts", []);
-
         const contract = new ethers.Contract(contractAddress, contractABI, provider);
+    
+        // ✅ Fetch campaign safely
         const campaignData = await contract.campaigns(id);
-        const donorData = await contract.getDonors(id); // Fetch donors from contract
-
-        const formattedCampaign = {
-          id,
-          title: campaignData.title,
-          description: campaignData.description,
-          target: ethers.formatEther(campaignData.target),
-          amountCollected: ethers.formatEther(campaignData.amountCollected),
-          deadline: new Date(Number(campaignData.deadline) * 1000).toLocaleDateString(),
-          image: campaignData.image,
-          state: campaignData.state,
-          region: campaignData.region,
-        };
-
-        setCampaign(formattedCampaign);
-        setDonors(donorData);
+        if (!campaignData) throw new Error("Invalid campaign data");
+    
+        // ✅ Fetch donors safely
+        let donorAddresses = [];
+        let donationAmounts = [];
+        try {
+          const donorsResult = await contract.getDonors(id);
+          
+          // Ensure donorsResult is structured as expected
+          if (donorsResult.length === 2) {
+            donorAddresses = donorsResult[0];
+            donationAmounts = donorsResult[1];
+          }
+    
+          console.log("Processed Donors:", donorAddresses, donationAmounts);
+        } catch (err) {
+          console.warn("Error fetching donors:", err);
+        }
+    
+        setCampaign({
+          title: campaignData.title || "Untitled",
+          target: ethers.formatEther(campaignData.target.toString()),
+          description: campaignData.description || "No description available.",
+          amountCollected: ethers.formatEther(campaignData.amountCollected.toString()),
+          deadline:
+            campaignData.deadline > 0
+              ? new Date(Number(campaignData.deadline) * 1000).toLocaleDateString()
+              : "N/A",
+          image: campaignData.image || "https://via.placeholder.com/300",
+          state: campaignData.state || "Unknown",
+          region: campaignData.region || "Unknown",
+        });
+    
+        // ✅ Fix Donor List Formatting
+        const formattedDonors = donorAddresses.map((address, index) => ({
+          address: address,
+          amount: donationAmounts[index] ? ethers.formatEther(donationAmounts[index]) : "0",
+        }));
+    
+        setDonors(formattedDonors);
       } catch (error) {
-        console.error("Error fetching campaign details:", error);
+        console.error("Error fetching details:", error);
+        alert("Failed to load campaign details.");
       } finally {
         setLoading(false);
       }
     };
+    
+    
+    
+    
 
     fetchCampaignDetails();
   }, [id]);
@@ -64,7 +96,7 @@ const CampaignDetail = () => {
       const signer = await provider.getSigner();
       const contract = new ethers.Contract(contractAddress, contractABI, signer);
 
-      const tx = await contract.donateToCampaign(id, {
+      const tx = await contract.contribute(id, {
         value: ethers.parseEther(donationAmount),
       });
 
@@ -118,7 +150,7 @@ const CampaignDetail = () => {
             <button
               onClick={handleDonate}
               disabled={processing}
-              className={`w-full mt-3 p-3 text-white font-semibold rounded-md ${
+              className={`w-full cursor-pointer mt-3 p-3 text-white font-semibold rounded-md ${
                 processing ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700 transition"
               }`}
             >
@@ -128,20 +160,30 @@ const CampaignDetail = () => {
 
           {/* Donor List */}
           <div className="mt-8">
-            <h3 className="text-xl font-semibold text-gray-800 mb-4">👥 Donor List</h3>
-            {donors.length > 0 ? (
-              <ul className="border rounded-lg bg-gray-50 p-4">
-                {donors.map((donor, index) => (
-                  <li key={index} className="p-2 border-b last:border-none flex justify-between text-gray-700">
-                    <span>{donor[0]}</span>
-                    <span>{ethers.formatEther(donor[1])} ETH</span>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-gray-600">No donations yet. Be the first to contribute! 🎉</p>
-            )}
-          </div>
+  <h3 className="text-xl font-semibold text-gray-800 mb-4">👥 Donor List</h3>
+  {donors.length > 0 ? (
+    <ul className="border rounded-lg bg-gray-50 p-1">
+    {donors.map((donor, index) => {
+  // Generate a random light background color
+  const randomBgColor = `hsl(${Math.floor(Math.random() * 360)}, 80%, 90%)`; // Light pastel colors
+  const textColor = "#333"; // Dark text color
+
+  return (
+    <li key={index} className="p-2 border-b last:border-none flex align-center justify-between text-gray-700">
+      <span>{donor.address}</span>
+      <span className="font-bold" style={{ color: textColor, backgroundColor: randomBgColor, padding: "5px 10px", borderRadius: "25px" }}>
+        {donor.amount} ETH
+      </span>
+    </li>
+  );
+})}
+
+    </ul>
+  ) : (
+    <p className="text-gray-600">No donations yet. Be the first to contribute! 🎉</p>
+  )}
+</div>
+
         </div>
       ) : (
         <p className="text-center text-gray-500">Campaign not found.</p>

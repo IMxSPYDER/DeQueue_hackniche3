@@ -5,7 +5,7 @@ import CampaignCard from "../Components/CampaignCard"; // Import the Campaign Ca
 import { Link, useNavigate } from "react-router-dom";
 
 // Replace with your contract address
-const contractAddress = "0x4560869AF45f2F4764F79eF1Fff55e0b3c6E467d";
+const contractAddress = "0xCf5f44a1769fb65C59d9Aed2ED27202cf3493BbC";
 
 const HomePage = () => {
   const [campaigns, setCampaigns] = useState([]);
@@ -73,17 +73,25 @@ const HomePage = () => {
                             
                         </div>
                         <div className="mt-8 max-w-[850px] font-medium text-gray-700 text-2xl text-center">
-                        Discover opportunities on our <span className="font-bold text-gray-800">Decentralized <span className="text-blue-500">crowdfunding platform</span></span>where innovators and supporters come together. Launch campaigns, contribute to causes, and track funds transparently — secure, direct, and on your terms. Start making an impact today!
+                        Launch campaigns, <span className="font-bold text-gray-800">support causes, and <span className="text-blue-500">track funds securely</span></span> all in a transparent, direct way.
+
+
+
+
+
+
+
+
                         </div>
                         <div className="mt-8 flex items-center gap-8 justify-center">
-                            <div className="px-1 py-2.5 text-white bg-blue-500 font-semibold rounded-md">
-                                <Link to="" className="px-4 py-1.5 hover:bg-blue-600 rounded-md">
-                                    Post JOB
-                                </Link>
+                            <div className="px-1 py-2.5 text-white bg-blue-500 font-semibold rounded-md cursor-pointer">
+                                <a href="#camp" className="px-4 py-1.5 hover:bg-blue-600 rounded-md">
+                                    Explore Campaigns
+                                </a>
                             </div>
                             <div className="px-1 py-2.5 border border-gray-200 bg-white/80 font-semibold rounded-md">
-                                <Link to="/find-job" className="text-gray-700 px-4 py-1.5 hover:bg-gray-100 rounded-md">
-                                    Find JOB
+                                <Link to="/dashboard" className="text-gray-700 px-4 py-1.5 hover:bg-gray-100 rounded-md">
+                                    Dashboard
                                 </Link>
                             </div>
                         </div>
@@ -91,7 +99,7 @@ const HomePage = () => {
                 </div>
             </div>
 
-    <div className="mt-[12px] mx-auto p-6 bg-white shadow-lg rounded-lg">
+    <div id="camp" className="mt-[12px] mx-auto p-6 bg-white shadow-lg rounded-lg">
       <h1 className="text-3xl font-bold text-gray-800 mb-6 text-center">🚀 Latest Campaigns</h1>
 
       {loading ? (
@@ -110,7 +118,7 @@ const HomePage = () => {
       <div className="flex justify-center mt-8">
         <button
           onClick={() => navigate("/campaigns")}
-          className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg shadow-lg transition-all"
+          className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg shadow-lg transition-all cursor-pointer"
         >
           🔍 View All Campaigns
         </button>
