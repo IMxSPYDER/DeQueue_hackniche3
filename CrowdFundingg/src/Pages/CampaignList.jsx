@@ -21,9 +21,9 @@ const CampaignList = () => {
         await provider.send("eth_requestAccounts", []);
 
         const contract = new ethers.Contract(contractAddress, contractABI, provider);
-        
+
         // Fetch all campaigns from the smart contract
-        const campaignsData = await contract.getAllCampaigns(); 
+        const campaignsData = await contract.getAllCampaigns();
         console.log("Raw Campaign Data:", campaignsData);
 
         // Format the fetched campaign data
@@ -60,17 +60,17 @@ const CampaignList = () => {
   }, []);
 
   return (
-    <div className="max-w-7xl mt-[100px] mx-auto p-6">
-      <h1 className="text-3xl font-bold text-gray-800 mb-6">📢 All Campaigns</h1>
+    <div className="mx-auto mt-[25px] p-6 bg-black text-gray-300">
+      <h1 className="text-4xl font-bold text-white mb-6">All Campaigns</h1>
 
       {loading ? (
-        <p className="text-center text-gray-600">Loading campaigns...</p>
+        <p className="text-center text-gray-500">Loading campaigns...</p>
       ) : campaigns.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {campaigns.map((campaign) => (
             <div
               key={campaign.id}
-              className="relative bg-white shadow-xl rounded-lg overflow-hidden transition-transform transform hover:scale-105 hover:shadow-2xl"
+              className="relative cursor-pointer bg-gray-900 shadow-lg rounded-lg overflow-hidden transition-transform transform hover:scale-105 hover:shadow-xl"
             >
               {/* Campaign Image with Error Handling */}
               <img
@@ -82,18 +82,18 @@ const CampaignList = () => {
 
               {/* Campaign Details */}
               <div className="p-5">
-                <h2 className="text-lg font-bold text-gray-800 truncate">
+                <h2 className="text-lg font-bold text-white truncate">
                   {campaign.title.length > 25 ? `${campaign.title.slice(0, 25)}...` : campaign.title}
                 </h2>
 
-                <p className="text-sm text-gray-600 mb-3">
+                <p className="text-sm text-gray-400 mb-3">
                   {campaign.description.length > 80 ? `${campaign.description.slice(0, 80)}...` : campaign.description}
                 </p>
 
                 {/* Progress Bar */}
-                <div className="relative w-full bg-gray-200 h-3 rounded-full overflow-hidden">
+                <div className="relative w-full bg-gray-700 h-3 rounded-full overflow-hidden">
                   <div
-                    className="absolute top-0 left-0 h-full bg-blue-500"
+                    className="absolute top-0 left-0 h-full bg-purple-500"
                     style={{
                       width: `${(campaign.amountCollected / campaign.target) * 100}%`,
                     }}
@@ -101,7 +101,7 @@ const CampaignList = () => {
                 </div>
 
                 {/* Campaign Stats */}
-                <div className="mt-3 text-sm text-gray-700">
+                <div className="mt-3 text-sm text-gray-400">
                   <p><strong>🎯 Target:</strong> {campaign.target} ETH</p>
                   <p><strong>💰 Raised:</strong> {campaign.amountCollected} ETH</p>
                   <p><strong>⏳ Deadline:</strong> {campaign.deadline}</p>
@@ -111,7 +111,7 @@ const CampaignList = () => {
                 {/* View Details Button */}
                 <Link
                   to={`/campaign/${campaign.id}`}
-                  className="block mt-4 text-center bg-gradient-to-r from-blue-500 to-blue-700 text-white py-2 px-4 rounded-md hover:opacity-90 transition"
+                  className="block mt-4 text-center bg-gradient-to-r from-purple-600 to-purple-800 text-white py-2 px-4 rounded-md hover:opacity-90 transition"
                 >
                   View Details
                 </Link>

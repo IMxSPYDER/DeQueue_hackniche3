@@ -6,30 +6,28 @@ const Navbar = ({ account, connectWallet }) => {
   };
 
   return (
-    <nav className="fixed top-0 left-0 w-full flex items-center justify-between px-8 py-4 bg-white shadow-lg pb-5 z-50">
+    <nav className="fixed top-0 left-0 w-full flex items-center justify-between px-8 py-4 bg-black shadow-lg pb-5 z-50">
       {/* Logo Section */}
       <div className="flex justify-between space-x-2">
         <Link
           to="/"
-          className="flex gap-2 items-center justify-between border border-gray-200 rounded-lg px-3 py-1 bg-white/80 cursor-pointer"
+          className="flex gap-2 items-center justify-between border border-gray-700 rounded-lg px-3 py-1 bg-black/80 cursor-pointer"
         >
-          <span className="font-bold">
-            De<span className="text-blue-500">Fund</span>
+          <span className="font-bold text-white">
+            De<span className="text-purple-500">Fund</span>
           </span>
         </Link>
-        <div className="flex space-x-4 border border-gray-200 rounded-lg px-3 py-1 bg-white/80">
-          <Link to="/campaign" className="text-gray-700 p-2 px-3 hover:bg-gray-100 font-medium rounded-md">
+        <div className="flex space-x-4 border border-gray-700 rounded-lg px-3 py-1 bg-black/80">
+          <Link to="/campaign" className="text-gray-300 p-2 px-3 hover:bg-purple-700 font-medium rounded-md">
             All Campaigns
           </Link>
-          {/* <Link to="/find-job" className="text-gray-700 p-2 px-3 hover:bg-gray-100 font-medium rounded-md">
-          </Link> */}
-          <Link to="/applied_jobs" className="text-gray-700 p-2 px-3 hover:bg-gray-100 font-medium rounded-md">
+          <Link to="/applied_jobs" className="text-gray-300 p-2 px-3 hover:bg-purple-700 font-medium rounded-md">
             My Applications
           </Link>
-          <Link to="/pricing" className="text-gray-700 p-2 px-3 hover:bg-gray-100 font-medium rounded-md">
+          <Link to="/pricing" className="text-gray-300 p-2 px-3 hover:bg-purple-700 font-medium rounded-md">
             About Us
           </Link>
-          <Link to="" className="text-gray-700 p-2 px-3 hover:bg-gray-100 font-medium rounded-md">
+          <Link to="" className="text-gray-300 p-2 px-3 hover:bg-purple-700 font-medium rounded-md">
             Settings
           </Link>
         </div>
@@ -40,11 +38,11 @@ const Navbar = ({ account, connectWallet }) => {
         {/* Right Side Buttons */}
         <div className="flex items-center space-x-3 gap-2">
           {account ? (
-            <Link to="/dashboard" className="px-4 cursor-pointer py-2.5 text-white font-semibold bg-blue-500 rounded-md">
+            <Link to="/dashboard" className="px-4 cursor-pointer py-2.5 text-white font-semibold bg-purple-600 hover:bg-purple-700 rounded-md">
               Dashboard
             </Link>
           ) : (
-            <button onClick={connectWallet} className="px-4 cursor-pointer py-2.5 text-white font-semibold bg-blue-500 rounded-md">
+            <button onClick={connectWallet} className="px-4 cursor-pointer py-2.5 text-white font-semibold bg-purple-600 hover:bg-purple-700 rounded-md">
               Connect to Wallet
             </button>
           )}

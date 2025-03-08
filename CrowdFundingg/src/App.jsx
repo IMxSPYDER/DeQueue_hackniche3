@@ -9,6 +9,8 @@ import { ethers } from "ethers";
 import contractABI from './Contract/abi.json'
 import CampaignList from "./Pages/CampaignList";
 import ErrorBoundary from "./Components/ErrorBoundary";
+import Footer from "./Components/Footer";
+import AllCampaign from "./Pages/AllCampaign";
 
 
 
@@ -68,11 +70,12 @@ function App() {
         <Route path="/" element={<Home contract={getContract()} />} />
         <Route path="/create-campaign" element={<CreateCampaign contract={getContract()} />} />
         <Route path="/campaign/:id" element={<CampaignDetail />} />
-        <Route path="/campaign" element={<CampaignList />} />
+        <Route path="/campaign" element={<AllCampaign />} />
         
         <Route path="/dashboard" element={<Dashboard />} />
         
       </Routes>
+      <Footer/>
     </Router>
   );
 }
