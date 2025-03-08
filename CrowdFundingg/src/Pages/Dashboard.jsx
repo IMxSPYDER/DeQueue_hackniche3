@@ -26,7 +26,7 @@ const Dashboard = ({ account, setAccount }) => {
       const web3Provider = new ethers.providers.Web3Provider(window.ethereum);
       setProvider(web3Provider);
       const signer = web3Provider.getSigner();
-      const contractInstance = new ethers.Contract(contractAddress, crowdfundingABI, account);
+      const contractInstance = new ethers.Contract(contractAddress, crowdfundingABI, acco);
       setContract(contractInstance);
 
       // Get all campaigns
@@ -56,27 +56,7 @@ const Dashboard = ({ account, setAccount }) => {
     }
   }, [account]);
 
-  // Handle input changes
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  // Create Campaign function
-  const handleCreateCampaign = async () => {
-    if (!contract) return alert("Smart contract not loaded.");
-    const { title, description, goal, imageUrl } = formData;
-
-    try {
-      const goalInWei = ethers.utils.parseEther(goal);
-      const transaction = await contract.createCampaign(title, description, goalInWei, imageUrl);
-      await transaction.wait();
-      alert("Campaign Created Successfully!");
-      setShowModal(false);
-    } catch (error) {
-      console.error(error);
-      alert("Campaign creation failed.");
-    }
-  };
+  // Handle input change
 
   // Disconnect Wallet
   const handleLogout = () => {
@@ -96,7 +76,6 @@ const Dashboard = ({ account, setAccount }) => {
       {/* Create Campaign Button */}
       <div className="my-6 flex justify-center">
         <button
-          onClick={() => setShowModal(true)}
           className="bg-blue-600 text-white px-6 py-3 rounded-lg shadow-md hover:bg-blue-700"
         >
           ➕ Create a New Campaign
@@ -123,61 +102,7 @@ const Dashboard = ({ account, setAccount }) => {
         )}
       </div>
 
-      {/* MODAL FORM FOR CREATING A CAMPAIGN */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-96">
-            <h2 className="text-2xl font-bold mb-4 text-center">Create a New Campaign</h2>
 
-            <input
-              type="text"
-              name="title"
-              placeholder="Campaign Title"
-              value={formData.title}
-              onChange={handleChange}
-              className="w-full p-2 border rounded mb-3"
-            />
-            <textarea
-              name="description"
-              placeholder="Description"
-              value={formData.description}
-              onChange={handleChange}
-              className="w-full p-2 border rounded mb-3"
-            />
-            <input
-              type="text"
-              name="goal"
-              placeholder="Goal (ETH)"
-              value={formData.goal}
-              onChange={handleChange}
-              className="w-full p-2 border rounded mb-3"
-            />
-            <input
-              type="text"
-              name="imageUrl"
-              placeholder="Image URL"
-              value={formData.imageUrl}
-              onChange={handleChange}
-              className="w-full p-2 border rounded mb-3"
-            />
-
-            <div className="flex justify-between mt-4">
-              <button
-                onClick={() => setShowModal(false)}
-                className="bg-gray-400 px-4 py-2 rounded-md text-white hover:bg-gray-500"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleCreateCampaign}
-                className="bg-green-500 px-4 py-2 rounded-md text-white hover:bg-green-600"
-              >
-                Create
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

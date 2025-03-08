@@ -1,53 +1,62 @@
-import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useEffect, useState } from "react";
 import { ethers } from "ethers";
-import crowdfundingABI from "../Contract/abi.json";
-
-const contractAddress = "0x0d01AAb8a941F48371A72C1f1858fbe77630660D"; // Replace with actual contract
+import contractABI from "../Contract/abi.json";
+import { Link } from "react-router-dom"; // Assuming routing is used
 
 const Home = () => {
-  const [campaigns, setCampaigns] = useState([]);
-  const [provider, setProvider] = useState(null);
-  const [contract, setContract] = useState(null);
+    const [campaigns, setCampaigns] = useState([]);
 
-  useEffect(() => {
-    const loadBlockchainData = async () => {
-      const web3Provider = new ethers.providers.Web3Provider(window.ethereum);
-      setProvider(web3Provider);
-      const contractInstance = new ethers.Contract(contractAddress, crowdfundingABI.abi, web3Provider);
-      setContract(contractInstance);
+    useEffect(() => {
+        const fetchCampaigns = async () => {
+            if (typeof window.ethereum === "undefined") {
+                console.error("MetaMask is not installed.");
+                return;
+            }
 
-      const campaignCount = await contractInstance.campaignCount();
-      const loadedCampaigns = [];
+            const provider = new ethers.BrowserProvider(window.ethereum);
+            const signer = await provider.getSigner();
 
-      for (let i = 0; i < campaignCount; i++) {
-        const campaign = await contractInstance.campaigns(i);
-        loadedCampaigns.push({ id: i, ...campaign });
-      }
+            const contractAddress = "0x0d01AAb8a941F48371A72C1f1858fbe77630660D"; // Your contract address
+            const contract = new ethers.Contract(contractAddress, contractABI, signer);
 
-      setCampaigns(loadedCampaigns);
-    };
+            try {
+                const allCampaigns = await contract.getAllCampaigns();
+                setCampaigns(allCampaigns);
+            } catch (error) {
+                console.error("Error fetching campaigns:", error);
+            }
+        };
 
-    if (window.ethereum) {
-      loadBlockchainData();
-    }
-  }, []);
+        fetchCampaigns();
+    }, []);
 
-  return (
-    <div className="mt-[120px]">
-      <h1 className="text-3xl font-bold mb-4">Active Campaigns</h1>
-      <div className="grid grid-cols-3 gap-4">
-        {campaigns.map((campaign, index) => (
-          <Link to={`/campaign/${index}`} key={index} className="p-4 border rounded-lg">
-            <img src={campaign.imageUrl} alt={campaign.title} className="w-full h-40 object-cover mb-2" />
-            <h2 className="text-xl font-semibold">{campaign.title}</h2>
-            <p>Goal: {ethers.utils.formatEther(campaign.goal)} ETH</p>
-            <p>Raised: {ethers.utils.formatEther(campaign.fundsRaised)} ETH</p>
-          </Link>
-        ))}
-      </div>
-    </div>
-  );
+    return (
+        <div className="container mt-[100px] mx-auto px-4 py-8">
+            <h1 className="text-3xl font-bold text-center mb-6">Trending Campaigns</h1>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {campaigns.slice(0, 4).map((campaign, index) => (
+                    <div key={index} className="bg-white shadow-lg rounded-lg p-4">
+                        <img src={campaign.imageUrl} alt={campaign.title} className="w-full h-40 object-cover rounded-md mb-3" />
+                        <h2 className="text-lg font-semibold">{campaign.title}</h2>
+                        <p className="text-gray-600 text-sm line-clamp-2">{campaign.description}</p>
+                        <p className="text-blue-600 font-semibold mt-2">Goal: {ethers.formatEther(campaign.goal)} ETH</p>
+                        <Link to={`/campaign/${index}`} className="mt-3 inline-block text-white bg-blue-500 px-4 py-2 rounded-md text-sm hover:bg-blue-600">
+                            View Details
+                        </Link>
+                    </div>
+                ))}
+            </div>
+
+            {/* View More Button */}
+            {campaigns.length > 4 && (
+                <div className="text-center mt-6">
+                    <Link to="/all-campaigns" className="text-blue-500 hover:underline font-semibold">
+                        View More Campaigns →
+                    </Link>
+                </div>
+            )}
+        </div>
+    );
 };
 
 export default Home;
