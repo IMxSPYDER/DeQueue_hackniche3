@@ -1,9 +1,49 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.9.3/contracts/security/ReentrancyGuard.sol";
-import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.9.3/contracts/utils/cryptography/MerkleProof.sol";
+// OpenZeppelin's ReentrancyGuard (flattened)
+abstract contract ReentrancyGuard {
+    uint256 private constant _NOT_ENTERED = 1;
+    uint256 private constant _ENTERED = 2;
 
+    uint256 private _status;
+
+    constructor() {
+        _status = _NOT_ENTERED;
+    }
+
+    modifier nonReentrant() {
+        require(_status != _ENTERED, "ReentrancyGuard: reentrant call");
+        _status = _ENTERED;
+        _;
+        _status = _NOT_ENTERED;
+    }
+}
+
+// OpenZeppelin's MerkleProof (flattened)
+library MerkleProof {
+    function verify(
+        bytes32[] memory proof,
+        bytes32 root,
+        bytes32 leaf
+    ) internal pure returns (bool) {
+        bytes32 computedHash = leaf;
+
+        for (uint256 i = 0; i < proof.length; i++) {
+            bytes32 proofElement = proof[i];
+
+            if (computedHash < proofElement) {
+                computedHash = keccak256(abi.encodePacked(computedHash, proofElement));
+            } else {
+                computedHash = keccak256(abi.encodePacked(proofElement, computedHash));
+            }
+        }
+
+        return computedHash == root;
+    }
+}
+
+// Main Crowdfunding Contract
 contract CrowdfundingPlatform is ReentrancyGuard {
     struct Campaign {
         address creator;
@@ -90,7 +130,10 @@ contract CrowdfundingPlatform is ReentrancyGuard {
         emit ContributionReceived(_campaignId, msg.sender, msg.value);
     }
 
-    function withdrawFunds(uint256 _campaignId, bytes32[] calldata _proof) public nonReentrant {
+    function withdrawFunds(
+        uint256 _campaignId,
+        bytes32[] calldata _proof
+    ) public nonReentrant {
         require(_campaignId < numberOfCampaigns, "Invalid campaign ID");
         Campaign storage campaign = campaigns[_campaignId];
         require(campaign.creator == msg.sender, "Only campaign creator can withdraw funds");
@@ -98,7 +141,7 @@ contract CrowdfundingPlatform is ReentrancyGuard {
         require(campaign.amountCollected >= campaign.target, "Target not reached");
         require(!campaign.isCompleted, "Funds already withdrawn");
 
-        // ZKP Verification
+        // ZKP Verification — Verify the user's identity without revealing personal data
         bytes32 leaf = keccak256(abi.encodePacked(msg.sender));
         require(MerkleProof.verify(_proof, merkleRoot, leaf), "Invalid ZKP proof");
 
@@ -138,52 +181,7 @@ contract CrowdfundingPlatform is ReentrancyGuard {
         return contributions[_campaignId][_contributor];
     }
 
-    function getDonors(uint256 _campaignId) public view returns (address[] memory, uint256[] memory) {
-        require(_campaignId < numberOfCampaigns, "Invalid campaign ID");
-        Campaign storage campaign = campaigns[_campaignId];
-        
-        uint256 donorCount = campaign.contributors.length;
-        uint256[] memory donationAmounts = new uint256[](donorCount);
-        
-        for (uint256 i = 0; i < donorCount; i++) {
-            donationAmounts[i] = contributions[_campaignId][campaign.contributors[i]];
-        }
-        
-        return (campaign.contributors, donationAmounts);
-    }
-
-    function getCampaignsByOwner(address _owner) public view returns (CampaignInfo[] memory) {
-        uint256 count = 0;
-        for (uint256 i = 0; i < numberOfCampaigns; i++) {
-            if (campaigns[i].creator == _owner) {
-                count++;
-            }
-        }
-        
-        CampaignInfo[] memory userCampaigns = new CampaignInfo[](count);
-        uint256 index = 0;
-        for (uint256 i = 0; i < numberOfCampaigns; i++) {
-            if (campaigns[i].creator == _owner) {
-                Campaign storage campaign = campaigns[i];
-                userCampaigns[index] = CampaignInfo(
-                    campaign.creator,
-                    campaign.title,
-                    campaign.description,
-                    campaign.target,
-                    campaign.deadline,
-                    campaign.amountCollected,
-                    campaign.state,
-                    campaign.region,
-                    campaign.image,
-                    campaign.isCompleted,
-                    campaign.contributors
-                );
-                index++;
-            }
-        }
-        return userCampaigns;
-    }
-
+    // ZKP Root Management for Proof Validation
     function setMerkleRoot(bytes32 _merkleRoot) external {
         merkleRoot = _merkleRoot;
     }

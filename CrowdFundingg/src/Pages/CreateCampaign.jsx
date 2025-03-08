@@ -3,18 +3,22 @@ import { ethers } from "ethers";
 import { motion } from "framer-motion";
 import { FiImage, FiUpload } from "react-icons/fi";
 
+const PINATA_API_KEY = "d3c1374dd7d3b0100487";
+const PINATA_SECRET_API_KEY = "29bd31b1bda7a2939e69ca4c1020293017221fb6bac3b91a35ef6d082c6b2b5d";
+
 const CreateCampaign = ({ contract }) => {
   const [form, setForm] = useState({
     title: "",
     description: "",
     target: "",
     deadline: "",
-    image: "",
     state: "",
     region: "",
+    image: "", // Will store IPFS CID
   });
 
   const [imagePreview, setImagePreview] = useState("");
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     if (!contract) {
@@ -25,8 +29,39 @@ const CreateCampaign = ({ contract }) => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm({ ...form, [name]: value });
+  };
 
-    if (name === "image") setImagePreview(value);
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setUploading(true);
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const response = await fetch("https://api.pinata.cloud/pinning/pinFileToIPFS", {
+        method: "POST",
+        headers: {
+          pinata_api_key: PINATA_API_KEY,
+          pinata_secret_api_key: PINATA_SECRET_API_KEY,
+        },
+        body: formData,
+      });
+
+      const result = await response.json();
+      const ipfsHash = result.IpfsHash; // CID of the uploaded file
+      const ipfsURL = `https://ipfs.io/ipfs/${ipfsHash}`;
+
+      setForm({ ...form, image: ipfsHash }); // Store CID in state
+      setImagePreview(ipfsURL);
+      setUploading(false);
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      setUploading(false);
+      alert("Image upload failed. Please try again.");
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -50,18 +85,17 @@ const CreateCampaign = ({ contract }) => {
       const tx = await contractWithSigner.createCampaign(
         form.title,
         form.description,
-        ethers.parseUnits(form.target, "ether"), // Fix: Proper conversion to wei
+        ethers.parseUnits(form.target, "ether"),
         Math.floor(new Date(form.deadline).getTime() / 1000),
         form.state,
         form.region,
-        form.image
+        form.image // Store IPFS CID instead of URL
       );
   
       await tx.wait();
       alert("🎉 Campaign created successfully!");
   
-      // Reset form after successful transaction
-      setForm({ title: "", description: "", target: "", deadline: "", image: "", state: "", region: "" });
+      setForm({ title: "", description: "", target: "", deadline: "", state: "", region: "", image: "" });
       setImagePreview("");
   
     } catch (error) {
@@ -69,7 +103,6 @@ const CreateCampaign = ({ contract }) => {
       alert("⚠️ Failed to create campaign.");
     }
   };
-  
 
   return (
     <motion.div
@@ -91,11 +124,20 @@ const CreateCampaign = ({ contract }) => {
           <input type="text" name="state" placeholder="State" value={form.state} onChange={handleChange} className="border p-3 rounded-md focus:outline-blue-500" required />
           <input type="text" name="region" placeholder="Region" value={form.region} onChange={handleChange} className="border p-3 rounded-md focus:outline-blue-500" required />
         </div>
+        
+        {/* Image Upload Section */}
         <div className="relative flex items-center gap-3 border p-3 rounded-md">
           <FiImage className="text-gray-500 text-xl" />
-          <input type="text" name="image" placeholder="Image URL" value={form.image} onChange={handleChange} className="w-full focus:outline-none" required />
+          <input type="file" accept="image/*" onChange={handleImageUpload} className="w-full focus:outline-none" />
         </div>
-        {imagePreview && <img src={imagePreview} alt="Preview" className="w-full h-40 object-cover rounded-md shadow-md" />}
+
+        {/* Image Preview */}
+        {uploading ? (
+          <p className="text-blue-500">Uploading...</p>
+        ) : (
+          imagePreview && <img src={imagePreview} alt="Preview" className="w-full h-40 object-cover rounded-md shadow-md" />
+        )}
+
         <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} type="submit" className="cursor-pointer bg-gradient-to-r from-blue-500 to-blue-700 text-white p-3 rounded-md font-semibold flex items-center justify-center gap-2">
           <FiUpload className="text-lg" /> Create Campaign
         </motion.button>
