@@ -1,152 +1,132 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.19;
+pragma solidity ^0.8.0;
 
-contract DecentralizedCrowdfunding {
-    enum Category { Health, Disaster, Crisis, Education, Environment }
-
+contract CrowdfundingPlatform {
     struct Campaign {
         address creator;
         string title;
         string description;
-        uint256 goal;
+        uint256 target;
         uint256 deadline;
-        uint256 fundsRaised;
-        bool claimed;
-        Category category;
-        string imageUrl; // 🆕 Stores image URL
-        string videoUrl; // 🆕 Stores video URL
-        mapping(address => uint256) contributions;
-        address[] donors;
+        uint256 amountCollected;
+        string state;
+        string region;
+        string image;
+        bool isCompleted;
+        address[] contributors;
     }
 
-    uint256 public campaignCount;
+    struct CampaignInfo {
+        address creator;
+        string title;
+        string description;
+        uint256 target;
+        uint256 deadline;
+        uint256 amountCollected;
+        string state;
+        string region;
+        string image;
+        bool isCompleted;
+        address[] contributors;
+    }
+
     mapping(uint256 => Campaign) public campaigns;
-    mapping(Category => uint256[]) public categoryCampaigns;
-    mapping(address => uint256[]) public userCampaigns;
-    mapping(address => uint256[]) public userDonatedCampaigns;
+    mapping(uint256 => mapping(address => uint256)) public contributions;
+    uint256 public numberOfCampaigns = 0;
 
-    event CampaignCreated(
-        uint256 campaignId, 
-        address creator, 
-        uint256 goal, 
-        uint256 deadline, 
-        Category category, 
-        string imageUrl, 
-        string videoUrl
-    );
-    
+    event CampaignCreated(uint256 campaignId, address creator, uint256 target, uint256 deadline);
     event ContributionReceived(uint256 campaignId, address contributor, uint256 amount);
-    event FundsClaimed(uint256 campaignId, address creator, uint256 amount);
-    event RefundIssued(uint256 campaignId, address contributor, uint256 amount);
-
-    modifier onlyCreator(uint256 _campaignId) {
-        require(msg.sender == campaigns[_campaignId].creator, "Not the campaign creator");
-        _;
-    }
-
-    modifier campaignExists(uint256 _campaignId) {
-        require(_campaignId < campaignCount, "Campaign does not exist");
-        _;
-    }
+    event FundsWithdrawn(uint256 campaignId, uint256 amount);
 
     function createCampaign(
         string memory _title,
         string memory _description,
-        uint256 _goal,
-        uint256 _duration,
-        Category _category,
-        string memory _imageUrl,  // 🆕 Image URL instead of IPFS hash
-        string memory _videoUrl   // 🆕 Video URL instead of IPFS hash
-    ) external {
-        require(_goal > 0, "Goal must be greater than zero");
-        require(_duration > 0, "Duration must be positive");
-        require(bytes(_imageUrl).length > 0, "Image URL is required");
-        require(bytes(_videoUrl).length > 0, "Video URL is required");
+        uint256 _target,
+        uint256 _deadline,
+        string memory _state,
+        string memory _region,
+        string memory _image
+    ) public returns (uint256) {
+        require(_target > 0, "Target amount must be greater than zero");
+        require(_deadline > block.timestamp, "Deadline must be in the future");
 
-        Campaign storage newCampaign = campaigns[campaignCount];
+        Campaign storage newCampaign = campaigns[numberOfCampaigns];
         newCampaign.creator = msg.sender;
         newCampaign.title = _title;
         newCampaign.description = _description;
-        newCampaign.goal = _goal;
-        newCampaign.deadline = block.timestamp + _duration;
-        newCampaign.claimed = false;
-        newCampaign.category = _category;
-        newCampaign.imageUrl = _imageUrl;  // Store image URL
-        newCampaign.videoUrl = _videoUrl;  // Store video URL
+        newCampaign.target = _target;
+        newCampaign.deadline = _deadline;
+        newCampaign.state = _state;
+        newCampaign.region = _region;
+        newCampaign.image = _image;
+        newCampaign.isCompleted = false;
 
-        categoryCampaigns[_category].push(campaignCount);
-        userCampaigns[msg.sender].push(campaignCount); // Store campaigns created by user
+        emit CampaignCreated(numberOfCampaigns, msg.sender, _target, _deadline);
 
-        emit CampaignCreated(campaignCount, msg.sender, _goal, newCampaign.deadline, _category, _imageUrl, _videoUrl);
-        campaignCount++;
+        numberOfCampaigns++;
+        return numberOfCampaigns - 1;
     }
 
-    function contribute(uint256 _campaignId) external payable campaignExists(_campaignId) {
-        Campaign storage campaign = campaigns[_campaignId];
-        require(block.timestamp < campaign.deadline, "Campaign has ended");
+    function contribute(uint256 _campaignId) public payable {
+        require(_campaignId < numberOfCampaigns, "Invalid campaign ID");
+        require(block.timestamp < campaigns[_campaignId].deadline, "Campaign deadline has passed");
         require(msg.value > 0, "Contribution must be greater than zero");
 
-        // If it's the user's first contribution, add to donors list
-        if (campaign.contributions[msg.sender] == 0) {
-            campaign.donors.push(msg.sender);
-            userDonatedCampaigns[msg.sender].push(_campaignId); // Store campaigns donated by user
+        Campaign storage campaign = campaigns[_campaignId];
+
+        if (contributions[_campaignId][msg.sender] == 0) {
+            campaign.contributors.push(msg.sender);
         }
 
-        campaign.contributions[msg.sender] += msg.value;
-        campaign.fundsRaised += msg.value;
+        contributions[_campaignId][msg.sender] += msg.value;
+        campaign.amountCollected += msg.value;
 
         emit ContributionReceived(_campaignId, msg.sender, msg.value);
     }
 
-    function claimFunds(uint256 _campaignId) external onlyCreator(_campaignId) campaignExists(_campaignId) {
+    function withdrawFunds(uint256 _campaignId) public {
+        require(_campaignId < numberOfCampaigns, "Invalid campaign ID");
         Campaign storage campaign = campaigns[_campaignId];
-        require(block.timestamp >= campaign.deadline, "Campaign is still running");
-        require(campaign.fundsRaised >= campaign.goal, "Funding goal not met");
-        require(!campaign.claimed, "Funds already claimed");
+        require(campaign.creator == msg.sender, "Only campaign creator can withdraw funds");
+        require(block.timestamp >= campaign.deadline, "Cannot withdraw before deadline");
+        require(campaign.amountCollected >= campaign.target, "Target not reached");
+        require(!campaign.isCompleted, "Funds already withdrawn");
 
-        campaign.claimed = true;
-        uint256 amount = campaign.fundsRaised;
-        campaign.fundsRaised = 0;
-        payable(msg.sender).transfer(amount);
+        uint256 amount = campaign.amountCollected;
+        campaign.isCompleted = true;
+        campaign.amountCollected = 0;
 
-        emit FundsClaimed(_campaignId, msg.sender, amount);
+        (bool sent, ) = payable(campaign.creator).call{value: amount}("");
+        require(sent, "Withdrawal failed");
+
+        emit FundsWithdrawn(_campaignId, amount);
     }
 
-    function requestRefund(uint256 _campaignId) external campaignExists(_campaignId) {
-        Campaign storage campaign = campaigns[_campaignId];
-        require(block.timestamp >= campaign.deadline, "Campaign is still running");
-        require(campaign.fundsRaised < campaign.goal, "Funding goal met, no refunds");
-
-        uint256 contribution = campaign.contributions[msg.sender];
-        require(contribution > 0, "No contributions found");
-
-        campaign.contributions[msg.sender] = 0;
-        payable(msg.sender).transfer(contribution);
-
-        emit RefundIssued(_campaignId, msg.sender, contribution);
+    function getAllCampaigns() public view returns (CampaignInfo[] memory) {
+        CampaignInfo[] memory allCampaigns = new CampaignInfo[](numberOfCampaigns);
+        for (uint256 i = 0; i < numberOfCampaigns; i++) {
+            Campaign storage campaign = campaigns[i];
+            allCampaigns[i] = CampaignInfo(
+                campaign.creator,
+                campaign.title,
+                campaign.description,
+                campaign.target,
+                campaign.deadline,
+                campaign.amountCollected,
+                campaign.state,
+                campaign.region,
+                campaign.image,
+                campaign.isCompleted,
+                campaign.contributors
+            );
+        }
+        return allCampaigns;
     }
 
-    function getCampaignsByCategory(Category _category) external view returns (uint256[] memory) {
-        return categoryCampaigns[_category];
+    function getContribution(uint256 _campaignId, address _contributor) public view returns (uint256) {
+        require(_campaignId < numberOfCampaigns, "Invalid campaign ID");
+        return contributions[_campaignId][_contributor];
     }
 
-    // **New Function: Get all campaigns created by a user**
-    function getCampaignsByCreator(address _creator) external view returns (uint256[] memory) {
-        return userCampaigns[_creator];
-    }
-
-    // **New Function: Get all campaigns a user has donated to**
-    function getCampaignsDonatedByUser(address _donor) external view returns (uint256[] memory) {
-        return userDonatedCampaigns[_donor];
-    }
-
-    // **New Function: Get all donors of a campaign**
-    function getDonors(uint256 _campaignId) external view campaignExists(_campaignId) returns (address[] memory) {
-        return campaigns[_campaignId].donors;
-    }
-
-    // **New Function: Get campaign media links**
-    function getCampaignMedia(uint256 _campaignId) external view campaignExists(_campaignId) returns (string memory, string memory) {
-        return (campaigns[_campaignId].imageUrl, campaigns[_campaignId].videoUrl);
-    }
+    receive() external payable {}
 }

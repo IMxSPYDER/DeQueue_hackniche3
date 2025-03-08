@@ -9,7 +9,7 @@ const CampaignCard = ({ campaign }) => {
       key={campaign.id}
       onClick={() => navigate(`/campaign/${campaign.id}`)}
       className="relative bg-white/80 backdrop-blur-lg shadow-lg rounded-2xl overflow-hidden cursor-pointer transform hover:scale-[1.08] hover:shadow-2xl transition-all duration-300 w-[350px]"
-      whileHover={{ scale: 1.08 }}
+      whileHover={{ scale: 0.9 }}
     >
       {/* Image with Gradient Overlay */}
       <div className="relative">
