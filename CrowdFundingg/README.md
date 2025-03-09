@@ -1,12 +1,24 @@
-# React + Vite
+# 🚀 Crowd Funding Project
+Welcome to the Crowd Funding Project, a decentralized platform that enables users to raise funds for their projects securely and transparently. Whether you're an entrepreneur, artist, or charity organization, our platform ensures a seamless fundraising experience.
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+-----
 
-Currently, two official plugins are available:
+# 🎯 Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Decentralized & Secure: Built on blockchain technology for transparency.
+- Zero-Knowledge Proofs (ZKP): Ensuring privacy and security for transactions.
+- SecureDapp Scan Audit: Achieved a 9/10 security score, ensuring a highly secure ecosystem.
+- Easy Fundraising: Create campaigns and start raising funds in minutes.
+- Smart Contracts: Automated and trustless transactions.
+- Global Reach: Accept contributions from anywhere in the world.
 
-## Expanding the ESLint configuration
+------
 
-If you are developing a production application, we recommend using TypeScript and enable type-aware lint rules. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+# 📷 Screenshots
+
+![image](https://github.com/user-attachments/assets/4285fc2b-e767-4ae3-8a74-326b4045c1ef)
+
+![image](https://github.com/user-attachments/assets/e5277abf-327a-47f3-9b5d-46370652925e)
+![image](https://github.com/user-attachments/assets/2ad7c7c9-2cd9-4776-a4ba-1443d1d8ff5b)
+
+
