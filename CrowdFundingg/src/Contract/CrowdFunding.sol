@@ -20,38 +20,6 @@ abstract contract ReentrancyGuard {
     }
 }
 
-// OpenZeppelin's Ownable for Access Control
-abstract contract Ownable {
-    address public owner;
-
-    constructor() {
-        owner = msg.sender;
-    }
-
-    modifier onlyOwner() {
-        require(msg.sender == owner, "Ownable: caller is not the owner");
-        _;
-    }
-}
-
-// OpenZeppelin's Pausable for Emergency Stop
-abstract contract Pausable is Ownable {
-    bool public paused;
-
-    modifier whenNotPaused() {
-        require(!paused, "Pausable: contract is paused");
-        _;
-    }
-
-    function pause() external onlyOwner {
-        paused = true;
-    }
-
-    function unpause() external onlyOwner {
-        paused = false;
-    }
-}
-
 // OpenZeppelin's MerkleProof (flattened)
 library MerkleProof {
     function verify(
@@ -76,7 +44,7 @@ library MerkleProof {
 }
 
 // Main Crowdfunding Contract
-contract CrowdfundingPlatform is ReentrancyGuard, Pausable {
+contract CrowdfundingPlatform is ReentrancyGuard {
     struct Campaign {
         address creator;
         string title;
@@ -124,7 +92,7 @@ contract CrowdfundingPlatform is ReentrancyGuard, Pausable {
         string memory _state,
         string memory _region,
         string memory _image
-    ) public whenNotPaused returns (uint256) {
+    ) public returns (uint256) {
         require(_target > 0, "Target amount must be greater than zero");
         require(_deadline > block.timestamp, "Deadline must be in the future");
 
@@ -145,7 +113,7 @@ contract CrowdfundingPlatform is ReentrancyGuard, Pausable {
         return numberOfCampaigns - 1;
     }
 
-    function contribute(uint256 _campaignId) public payable whenNotPaused {
+    function contribute(uint256 _campaignId) public payable {
         require(_campaignId < numberOfCampaigns, "Invalid campaign ID");
         require(block.timestamp < campaigns[_campaignId].deadline, "Campaign deadline has passed");
         require(msg.value > 0, "Contribution must be greater than zero");
@@ -165,7 +133,7 @@ contract CrowdfundingPlatform is ReentrancyGuard, Pausable {
     function withdrawFunds(
         uint256 _campaignId,
         bytes32[] calldata _proof
-    ) public nonReentrant whenNotPaused {
+    ) public nonReentrant {
         require(_campaignId < numberOfCampaigns, "Invalid campaign ID");
         Campaign storage campaign = campaigns[_campaignId];
         require(campaign.creator == msg.sender, "Only campaign creator can withdraw funds");
@@ -189,7 +157,7 @@ contract CrowdfundingPlatform is ReentrancyGuard, Pausable {
 
     function getAllCampaigns() public view returns (CampaignInfo[] memory) {
         CampaignInfo[] memory allCampaigns = new CampaignInfo[](numberOfCampaigns);
-        for (uint256 i; i < numberOfCampaigns; ) {
+        for (uint256 i = 0; i < numberOfCampaigns; i++) {
             Campaign storage campaign = campaigns[i];
             allCampaigns[i] = CampaignInfo(
                 campaign.creator,
@@ -204,7 +172,6 @@ contract CrowdfundingPlatform is ReentrancyGuard, Pausable {
                 campaign.isCompleted,
                 campaign.contributors
             );
-            unchecked { i++; }  // Gas Optimization
         }
         return allCampaigns;
     }
@@ -214,8 +181,61 @@ contract CrowdfundingPlatform is ReentrancyGuard, Pausable {
         return contributions[_campaignId][_contributor];
     }
 
-    // ZKP Root Management for Proof Validation with Access Control
-    function setMerkleRoot(bytes32 _merkleRoot) external onlyOwner {
+    // Added missing functions
+
+    function getDonors(uint256 _campaignId) public view returns (address[] memory, uint256[] memory) {
+        require(_campaignId < numberOfCampaigns, "Invalid campaign ID");
+        Campaign storage campaign = campaigns[_campaignId];
+
+        uint256 donorCount = campaign.contributors.length;
+        uint256[] memory donationAmounts = new uint256[](donorCount);
+
+        for (uint256 i = 0; i < donorCount; i++) {
+            donationAmounts[i] = contributions[_campaignId][campaign.contributors[i]];
+        }
+
+        return (campaign.contributors, donationAmounts);
+    }
+
+    function getCampaignsByOwner(address _owner) public view returns (CampaignInfo[] memory) {
+        uint256 count = 0;
+
+        // Count campaigns created by the user
+        for (uint256 i = 0; i < numberOfCampaigns; i++) {
+            if (campaigns[i].creator == _owner) {
+                count++;
+            }
+        }
+
+        // Create an array to store user campaigns
+        CampaignInfo[] memory userCampaigns = new CampaignInfo[](count);
+        uint256 index = 0;
+
+        for (uint256 i = 0; i < numberOfCampaigns; i++) {
+            if (campaigns[i].creator == _owner) {
+                Campaign storage campaign = campaigns[i];
+                userCampaigns[index] = CampaignInfo(
+                    campaign.creator,
+                    campaign.title,
+                    campaign.description,
+                    campaign.target,
+                    campaign.deadline,
+                    campaign.amountCollected,
+                    campaign.state,
+                    campaign.region,
+                    campaign.image,
+                    campaign.isCompleted,
+                    campaign.contributors
+                );
+                index++;
+            }
+        }
+
+        return userCampaigns;
+    }
+
+    // ZKP Root Management for Proof Validation
+    function setMerkleRoot(bytes32 _merkleRoot) external {
         merkleRoot = _merkleRoot;
     }
 
