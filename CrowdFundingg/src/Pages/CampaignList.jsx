@@ -27,26 +27,28 @@ const CampaignList = () => {
         console.log("Raw Campaign Data:", campaignsData);
 
         // Format the fetched campaign data
-        const formattedCampaigns = campaignsData.map((campaign, index) => {
-          let imageUrl = campaign.image || "";
+        const formattedCampaigns = campaignsData
+          .map((campaign, index) => {
+            let imageUrl = campaign.image || "";
 
-          // Check if image is an IPFS hash and convert to URL
-          if (imageUrl.startsWith("Qm") || imageUrl.startsWith("bafy")) {
-            imageUrl = `https://ipfs.io/ipfs/${imageUrl}`;
-          }
+            // Check if image is an IPFS hash and convert to URL
+            if (imageUrl.startsWith("Qm") || imageUrl.startsWith("bafy")) {
+              imageUrl = `https://ipfs.io/ipfs/${imageUrl}`;
+            }
 
-          return {
-            id: index,
-            title: campaign.title || "Untitled Campaign",
-            description: campaign.description || "No description available.",
-            target: ethers.formatEther(campaign.target),
-            amountCollected: ethers.formatEther(campaign.amountCollected),
-            deadline: campaign.deadline > 0 ? new Date(Number(campaign.deadline) * 1000).toLocaleDateString() : "N/A",
-            image: imageUrl || "https://via.placeholder.com/300",
-            state: campaign.state || "Unknown",
-            region: campaign.region || "Unknown",
-          };
-        });
+            return {
+              id: index,
+              title: campaign.title || "Untitled Campaign",
+              description: campaign.description || "No description available.",
+              target: parseFloat(ethers.formatEther(campaign.target)),
+              amountCollected: parseFloat(ethers.formatEther(campaign.amountCollected)),
+              deadline: campaign.deadline > 0 ? new Date(Number(campaign.deadline) * 1000).toLocaleDateString() : "N/A",
+              image: imageUrl || "https://via.placeholder.com/300",
+              state: campaign.state || "Unknown",
+              region: campaign.region || "Unknown",
+            };
+          })
+          .filter(campaign => campaign.amountCollected < campaign.target); // 🔥 Exclude fully funded campaigns
 
         setCampaigns(formattedCampaigns);
       } catch (error) {

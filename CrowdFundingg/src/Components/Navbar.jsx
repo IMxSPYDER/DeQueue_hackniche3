@@ -6,7 +6,7 @@ const Navbar = ({ account, connectWallet }) => {
   };
 
   return (
-    <nav className="fixed top-0 left-0 w-full flex items-center justify-between px-8 py-4 bg-black shadow-lg pb-5 z-50">
+    <nav className="fixed top-0 left-0 w-full flex items-center justify-between px-8 py-4 bg-black shadow-[0_4px_10px_rgba(128,0,128,0.7)] pb-5 z-50">
       {/* Logo Section */}
       <div className="flex justify-between space-x-2">
         <Link
@@ -24,7 +24,7 @@ const Navbar = ({ account, connectWallet }) => {
           <Link to="/applied_jobs" className="text-gray-300 p-2 px-3 hover:bg-purple-700 font-medium rounded-md">
             My Applications
           </Link>
-          <Link to="/pricing" className="text-gray-300 p-2 px-3 hover:bg-purple-700 font-medium rounded-md">
+          <Link to="/about-us" className="text-gray-300 p-2 px-3 hover:bg-purple-700 font-medium rounded-md">
             About Us
           </Link>
           <Link to="" className="text-gray-300 p-2 px-3 hover:bg-purple-700 font-medium rounded-md">

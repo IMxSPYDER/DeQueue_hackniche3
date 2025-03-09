@@ -27,17 +27,14 @@ const CampaignDetail = () => {
         await provider.send("eth_requestAccounts", []);
         const contract = new ethers.Contract(contractAddress, contractABI, provider);
 
-        // ✅ Fetch campaign safely
         const campaignData = await contract.campaigns(id);
         if (!campaignData) throw new Error("Invalid campaign data");
 
-        // ✅ Handle Image (Detect & Convert IPFS Hash)
         let imageUrl = campaignData.image || "";
         if (imageUrl.startsWith("Qm") || imageUrl.startsWith("bafy")) {
           imageUrl = `https://ipfs.io/ipfs/${imageUrl}`;
         }
 
-        // ✅ Fetch donors safely
         let donorAddresses = [];
         let donationAmounts = [];
         try {
@@ -64,7 +61,6 @@ const CampaignDetail = () => {
           region: campaignData.region || "Unknown",
         });
 
-        // ✅ Fix Donor List Formatting
         const formattedDonors = donorAddresses.map((address, index) => ({
           address: address,
           amount: donationAmounts[index] ? ethers.formatEther(donationAmounts[index]) : "0",
@@ -101,7 +97,6 @@ const CampaignDetail = () => {
       await tx.wait();
       alert("Donation Successful! 🎉");
 
-      // Refresh page to show updated donations
       window.location.reload();
     } catch (error) {
       console.error("Donation failed:", error);
@@ -112,71 +107,81 @@ const CampaignDetail = () => {
   };
 
   return (
-    <div className="max-w-5xl mt-[120px] mx-auto p-6 bg-white shadow-xl rounded-lg">
+    <div className="bg-black p-5">
+    <div className="max-w-5xl mb-[20px] mt-[100px] mx-auto p-6 bg-gray-900 text-white shadow-lg rounded-lg">
       {loading ? (
-        <p className="text-center text-gray-600">Loading...</p>
+        <p className="text-center text-gray-400">Loading...</p>
       ) : campaign ? (
         <div>
-          {/* Campaign Image with Error Handling */}
           <img
             src={campaign.image}
             alt={campaign.title}
-            className="w-full h-64 object-cover rounded-md mb-6"
-            onError={(e) => { e.target.src = "https://via.placeholder.com/300"; }} // Fallback Image
+            className="w-full h-64 object-cover rounded-md mb-6 border border-gray-700"
+            onError={(e) => { e.target.src = "https://via.placeholder.com/300"; }} 
           />
 
-          {/* Campaign Details */}
-          <h2 className="text-3xl font-bold text-gray-800 mb-2">{campaign.title}</h2>
-          <p className="text-gray-600 mb-4">{campaign.description}</p>
+          <h2 className="text-3xl font-bold text-white mb-2">{campaign.title}</h2>
+          <p className="text-gray-400 mb-4">{campaign.description}</p>
 
-          <div className="grid grid-cols-2 gap-4 bg-gray-100 p-4 rounded-lg">
-            <p className="flex gap-1 font-bold items-center text-gray-700 text-lg"><FiTarget className="text-gray-500 text-xl" /> Target: <span className="font-semibold">{campaign.target} ETH</span></p>
-            <p className="flex gap-1 font-bold items-center text-gray-700 text-lg"><FiDollarSign className="text-gray-500 text-xl" /> Raised: <span className="font-semibold">{campaign.amountCollected} ETH</span></p>
-            <p className="flex gap-1 font-bold items-center text-gray-700 text-lg"><FiClock className="text-gray-500 text-xl" /> Deadline: <span className="font-semibold">{campaign.deadline}</span></p>
-            <p className="flex gap-1 font-bold items-center text-gray-700 text-lg"><FiMapPin className="text-gray-500 text-xl" /> Location: <span className="font-semibold">{campaign.state}, {campaign.region}</span></p>
+          <div className="grid grid-cols-2 gap-4 bg-gray-800 p-4 rounded-lg border border-gray-700">
+            <p className="flex gap-1 font-bold items-center text-gray-300 text-lg">
+              <FiTarget className="text-gray-400 text-xl" /> Target: 
+              <span className="font-semibold text-white">{campaign.target} ETH</span>
+            </p>
+            <p className="flex gap-1 font-bold items-center text-gray-300 text-lg">
+              <FiDollarSign className="text-gray-400 text-xl" /> Raised: 
+              <span className="font-semibold text-white">{campaign.amountCollected} ETH</span>
+            </p>
+            <p className="flex gap-1 font-bold items-center text-gray-300 text-lg">
+              <FiClock className="text-gray-400 text-xl" /> Deadline: 
+              <span className="font-semibold text-white">{campaign.deadline}</span>
+            </p>
+            <p className="flex gap-1 font-bold items-center text-gray-300 text-lg">
+              <FiMapPin className="text-gray-400 text-xl" /> Location: 
+              <span className="font-semibold text-white">{campaign.state}, {campaign.region}</span>
+            </p>
           </div>
 
-          {/* Donation Section */}
-          <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-            <h3 className="text-xl font-semibold text-blue-800 mb-2">💖 Support This Campaign</h3>
+          <div className="mt-6 p-4 bg-gray-800 rounded-lg border border-gray-700">
+            <h3 className="text-xl font-semibold text-gray-300 mb-2">💖 Support This Campaign</h3>
             <input
               type="number"
               placeholder="Enter amount in ETH"
               value={donationAmount}
               onChange={(e) => setDonationAmount(e.target.value)}
-              className="w-full p-3 border rounded-md text-gray-800"
+              className="w-full p-3 bg-gray-700 border border-gray-600 rounded-md text-white"
             />
             <button
               onClick={handleDonate}
               disabled={processing}
               className={`w-full cursor-pointer mt-3 p-3 text-white font-semibold rounded-md ${
-                processing ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700 transition"
+                processing ? "bg-gray-600 cursor-not-allowed" : "bg-purple-600 hover:bg-purple-700 transition"
               }`}
             >
               {processing ? "Processing..." : "Donate Now"}
             </button>
           </div>
 
-          {/* Donor List */}
           <div className="mt-8">
-            <h3 className="text-xl font-semibold text-gray-800 mb-4">👥 Donor List</h3>
+            <h3 className="text-xl font-semibold text-gray-300 mb-4">👥 Donor List</h3>
             {donors.length > 0 ? (
-              <ul className="border rounded-lg bg-gray-50 p-1">
+              <ul className="border border-gray-700 rounded-lg bg-gray-800 p-1">
                 {donors.map((donor, index) => (
-                  <li key={index} className="p-2 border-b last:border-none flex justify-between text-gray-700">
+                  <li key={index} className="p-2 border-b border-gray-700 last:border-none flex justify-between text-gray-300">
                     <span>{donor.address}</span>
-                    <span className="font-bold bg-gray-200 px-3 py-1 rounded-md">{donor.amount} ETH</span>
+                    <span className="font-bold bg-gray-700 px-3 py-1 rounded-md">{donor.amount} ETH</span>
                   </li>
                 ))}
               </ul>
             ) : (
-              <p className="text-gray-600">No donations yet. Be the first to contribute! 🎉</p>
+              <p className="text-gray-400">No donations yet. Be the first to contribute! 🎉</p>
             )}
           </div>
         </div>
       ) : (
-        <p className="text-center text-gray-500">Campaign not found.</p>
+        <p className="text-center text-gray-400">Campaign not found.</p>
       )}
+    </div>
     </div>
   );
 };
