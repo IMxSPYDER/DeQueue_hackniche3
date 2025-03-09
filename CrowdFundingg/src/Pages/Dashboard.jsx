@@ -32,7 +32,7 @@ const Dashboard = () => {
         const userCampaigns = await contract.getCampaignsByOwner(address);
         const allCampaigns = await contract.getAllCampaigns();
         let donatedCampaigns = [];
-
+        
         for (let i = 0; i < allCampaigns.length; i++) {
           const campaign = allCampaigns[i];
           const contribution = await contract.getContribution(i, address);
@@ -51,8 +51,23 @@ const Dashboard = () => {
             });
           }
         }
+      
 
-        setCreatedCampaigns(userCampaigns);
+        const formattedCampaigns = userCampaigns.map((campaign, index) => ({
+          id: index,  // Ensure each campaign gets an ID
+          title: campaign[1],
+          description: campaign[2],
+          target: campaign[3].toString(),
+          deadline: campaign[4].toString(),
+          amountCollected: campaign[5].toString(),
+          location: `${campaign[6]}, ${campaign[7]}`,
+          image: `https://ipfs.io/ipfs/${campaign[8]}`,
+        }));
+        
+        setCreatedCampaigns(formattedCampaigns);
+
+        // setCreatedCampaigns(userCampaigns);
+        console.log(createdCampaigns)
         setDonatedCampaigns(donatedCampaigns);
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
@@ -118,6 +133,7 @@ const Dashboard = () => {
         createdCampaigns.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {createdCampaigns.map((campaign) => {
+
               let imageUrl = campaign.image || "";
               if (imageUrl.startsWith("Qm") || imageUrl.startsWith("bafy")) {
                 imageUrl = `https://ipfs.io/ipfs/${imageUrl}`;
@@ -138,7 +154,10 @@ const Dashboard = () => {
                     <p className="text-gray-400 text-sm">{campaign.description ? campaign.description.slice(0, 80) + "..." : "No description available."}</p>
                     <p className="text-sm text-gray-400 mt-2">🎯 Target: {ethers.formatEther(campaign.target || "0")} ETH</p>
                     <p className="text-sm text-gray-400">💰 Raised: {ethers.formatEther(campaign.amountCollected || "0")} ETH</p>
-                    <Link to={`/campaign/${campaign.id}`} className="block mt-3 text-center bg-purple-500 text-white py-2 rounded-md hover:bg-purple-700">
+                    <Link 
+                      to={`/user_camp/${campaign.id}`} 
+                      state={{ campaign }} 
+                      className="block mt-3 text-center bg-purple-500 text-white py-2 rounded-md hover:bg-purple-700">
                       View Campaign
                     </Link>
                   </div>

@@ -12,6 +12,8 @@ import ErrorBoundary from "./Components/ErrorBoundary";
 import Footer from "./Components/Footer";
 import AllCampaign from "./Pages/AllCampaign";
 import AboutUs from "./Pages/AboutUS";
+import CampaignDetailsUser from "./Pages/CampaignDetailsUser";
+import Blogs from "./Pages/Blogs";
 
 
 
@@ -74,6 +76,9 @@ function App() {
         <Route path="/campaign" element={<AllCampaign />} />
         <Route path="/about-us" element={<AboutUs/>}/>
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/user_camp/:id" element={<CampaignDetailsUser />} />
+        <Route path="/blogs" element={<Blogs/>} />
+
         
       </Routes>
       <Footer/>

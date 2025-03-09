@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import logo from '../assets/logo.jpeg'
 
 const Navbar = ({ account, connectWallet }) => {
   const formatAccount = (address) => {
@@ -12,7 +13,8 @@ const Navbar = ({ account, connectWallet }) => {
         <Link
           to="/"
           className="flex gap-2 items-center justify-between border border-gray-700 rounded-lg px-3 py-1 bg-black/80 cursor-pointer"
-        >
+        > 
+          <img src={logo} alt="" className='rounded-[50%] h-[25px] w-[25px]' />
           <span className="font-bold text-white">
             De<span className="text-purple-500">Fund</span>
           </span>
@@ -21,8 +23,8 @@ const Navbar = ({ account, connectWallet }) => {
           <Link to="/campaign" className="text-gray-300 p-2 px-3 hover:bg-purple-700 font-medium rounded-md">
             All Campaigns
           </Link>
-          <Link to="/applied_jobs" className="text-gray-300 p-2 px-3 hover:bg-purple-700 font-medium rounded-md">
-            My Applications
+          <Link to="/blogs" className="text-gray-300 p-2 px-3 hover:bg-purple-700 font-medium rounded-md">
+            Blogs
           </Link>
           <Link to="/about-us" className="text-gray-300 p-2 px-3 hover:bg-purple-700 font-medium rounded-md">
             About Us
