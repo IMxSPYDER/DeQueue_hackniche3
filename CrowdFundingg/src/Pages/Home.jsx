@@ -105,7 +105,7 @@ const HomePage = () => {
         {loading ? (
           <p className="text-center text-gray-400">Loading campaigns...</p>
         ) : campaigns.length > 0 ? (
-          <div className="flex flex-row gap-2">
+          <div className="flex flex-row gap-2 flex-wrap">
             {campaigns.map((campaign) => (
               <CampaignCard key={campaign.id} campaign={campaign} />
             ))}

@@ -15,7 +15,7 @@ const CampaignCard = ({ campaign }) => {
     <motion.div
       key={campaign.id}
       onClick={() => navigate(`/campaign/${campaign.id}`)}
-      className="relative bg-[#191919]backdrop-blur-lg shadow-lg rounded-2xl overflow-hidden cursor-pointer transform hover:scale-[1.08] hover:shadow-2xl transition-all duration-300 w-[350px] border border-gray-800"
+      className="relative bg-[#191919]backdrop-blur-lg shadow-lg rounded-2xl overflow-hidden cursor-pointer transform hover:scale-[1.08] hover:shadow-2xl transition-all duration-300 w-[310px] border border-gray-800"
       whileHover={{ scale: 0.95 }}
     >
       {/* Image with Gradient Overlay */}
