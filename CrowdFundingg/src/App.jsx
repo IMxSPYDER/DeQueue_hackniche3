@@ -4,16 +4,19 @@ import CreateCampaign from "./Pages/CreateCampaign";
 import CampaignDetail from "./Pages/CampaignDetail";
 import Dashboard from "./Pages/Dashboard";
 import { useEffect, useState } from "react";
-import Navbar from "./Components/Navbar.jsX";
+
 import { ethers } from "ethers";
 import contractABI from './Contract/abi.json'
 import CampaignList from "./Pages/CampaignList";
-import ErrorBoundary from "./Components/ErrorBoundary";
+// import ErrorBoundary from "./Components/ErrorBoundary";
 import Footer from "./Components/Footer";
 import AllCampaign from "./Pages/AllCampaign";
 import AboutUs from "./Pages/AboutUS";
 import CampaignDetailsUser from "./Pages/CampaignDetailsUser";
 import Blogs from "./Pages/Blogs";
+import Navbar_m from "./Components/Navbar_m";
+
+
 
 
 
@@ -66,9 +69,33 @@ function App() {
     return new ethers.Contract(contractAddress, contractABI, signer);
   };
 
+  const disconnectWallet = async () => {
+    try {
+      if (window.ethereum) {
+        // Revoke permission to access wallet (forces user to reconnect)
+        await window.ethereum.request({
+          method: "wallet_revokePermissions",
+          params: [{ eth_accounts: {} }]
+        });
+  
+        setAccount(null);
+        localStorage.removeItem("walletConnected"); // Remove stored wallet session
+  
+        alert("Wallet disconnected! You will need to reconnect manually.");
+  
+        window.location.reload(); // Refresh page to reset state
+      } else {
+        alert("MetaMask not detected.");
+      }
+    } catch (error) {
+      console.error("Error disconnecting wallet:", error);
+    }
+  };
+  
+
   return (
     <Router>
-      <Navbar account={account} connectWallet={connectWallet} />
+      <Navbar_m account={account} connectWallet={connectWallet} disconnectWallet={disconnectWallet} />
       <Routes>
         <Route path="/" element={<Home contract={getContract()} />} />
         <Route path="/create-campaign" element={<CreateCampaign contract={getContract()} />} />

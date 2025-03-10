@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import logo from '../assets/logo.jpeg'
 
-const Navbar = ({ account, connectWallet }) => {
+const Navbar_m = ({ account, connectWallet, disconnectWallet}) => {
   const formatAccount = (address) => {
     return `${address.slice(0, 3)}...${address.slice(-4)}`;
   };
@@ -39,19 +39,25 @@ const Navbar = ({ account, connectWallet }) => {
       <div className="flex items-center space-x-6">
         {/* Right Side Buttons */}
         <div className="flex items-center space-x-3 gap-2">
-          {account ? (
-            <Link to="/dashboard" className="px-4 cursor-pointer py-2.5 text-white font-semibold bg-purple-600 hover:bg-purple-700 rounded-md">
+        {account ? (
+          <div className="flex items-center gap-4">
+            <span className="text-gray-300">{formatAccount(account)}</span>
+            <Link to="/dashboard" className="px-4 py-2 text-white font-semibold bg-purple-600 hover:bg-purple-700 rounded-md">
               Dashboard
             </Link>
-          ) : (
-            <button onClick={connectWallet} className="px-4 cursor-pointer py-2.5 text-white font-semibold bg-purple-600 hover:bg-purple-700 rounded-md">
-              Connect to Wallet
+            <button onClick={disconnectWallet} className="px-4 py-2 text-white bg-red-500 hover:bg-red-700 rounded-md">
+              Logout
             </button>
-          )}
+          </div>
+        ) : (
+          <button onClick={connectWallet} className="px-4 py-2 text-white font-semibold bg-purple-600 hover:bg-purple-700 rounded-md">
+            Connect Wallet
+          </button>
+        )}
         </div>
       </div>
     </nav>
   );
 };
 
-export default Navbar;
+export default Navbar_m;

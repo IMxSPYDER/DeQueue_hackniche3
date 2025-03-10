@@ -79,27 +79,17 @@ const Dashboard = () => {
     fetchDashboardData();
   }, []);
 
-  // **Disconnect Wallet Function**
-  const disconnectWallet = () => {
-    setUserAddress(null); // Reset user address
-    localStorage.removeItem("walletConnected"); // Clear connection data (optional)
-    alert("Wallet disconnected!");
-  };
+  // // **Disconnect Wallet Function**
+  // const disconnectWallet = () => {
+  //   setUserAddress(null); // Reset user address
+  //   localStorage.removeItem("walletConnected"); // Clear connection data (optional)
+  //   alert("Wallet disconnected!");
+  // };
 
   return (
     <div className="mx-auto mt-20 p-6 bg-gray-900 text-gray-300 shadow-lg rounded-lg">
       <div className="flex justify-between items-center">
         <h2 className="text-3xl font-bold text-white">My Dashboard</h2>
-        
-        {/* **Logout Button (Only visible if wallet is connected)** */}
-        {userAddress && (
-          <button
-            onClick={disconnectWallet}
-            className="cursor-pointer bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded transition"
-          >
-            Logout
-          </button>
-        )}
       </div>
 
       <div className="flex justify-center space-x-4 my-6">
