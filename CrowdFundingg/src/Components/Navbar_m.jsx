@@ -45,12 +45,12 @@ const Navbar_m = ({ account, connectWallet, disconnectWallet}) => {
             <Link to="/dashboard" className="px-4 py-2 text-white font-semibold bg-purple-600 hover:bg-purple-700 rounded-md">
               Dashboard
             </Link>
-            <button onClick={disconnectWallet} className="px-4 py-2 text-white bg-red-500 hover:bg-red-700 rounded-md">
+            <button onClick={disconnectWallet} className="px-4 cursor-pointer py-2 text-white bg-red-500 hover:bg-red-700 rounded-md">
               Logout
             </button>
           </div>
         ) : (
-          <button onClick={connectWallet} className="px-4 py-2 text-white font-semibold bg-purple-600 hover:bg-purple-700 rounded-md">
+          <button onClick={connectWallet} className="px-4 cursor-pointer py-2 text-white font-semibold bg-purple-600 hover:bg-purple-700 rounded-md">
             Connect Wallet
           </button>
         )}
